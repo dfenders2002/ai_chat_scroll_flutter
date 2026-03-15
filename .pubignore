@@ -1,0 +1,8 @@
+# Build artifacts
+build/
+
+# Generated documentation (pub.dev generates its own)
+doc/
+
+# Dart tool cache
+.dart_tool/
