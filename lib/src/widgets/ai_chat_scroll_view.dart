@@ -30,10 +30,9 @@ import 'filler_sliver.dart';
 /// )
 /// ```
 ///
-/// > **Note:** Pass messages in reverse order (index 0 = newest) to achieve
-/// > the conventional newest-at-bottom chat layout. The [AiChatScrollView]
-/// > renders items from index 0 downward; reversing the data gives the correct
-/// > visual order.
+/// > **Note:** Pass messages in chronological order (index 0 = oldest,
+/// > last index = newest). The [AiChatScrollView] renders items top-to-bottom,
+/// > producing the conventional newest-at-bottom chat layout.
 class AiChatScrollView extends StatefulWidget {
   /// Creates an [AiChatScrollView].
   ///
@@ -54,8 +53,8 @@ class AiChatScrollView extends StatefulWidget {
 
   /// Called to build each message item in the list.
   ///
-  /// The index is zero-based. Pass messages in reverse order (index 0 =
-  /// newest) for a conventional newest-at-bottom chat layout.
+  /// The index is zero-based. Pass messages in chronological order (index 0 =
+  /// oldest, last index = newest) for a conventional newest-at-bottom chat layout.
   final IndexedWidgetBuilder itemBuilder;
 
   /// The total number of message items to display.
