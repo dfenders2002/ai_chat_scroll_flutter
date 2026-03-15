@@ -29,7 +29,9 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. The controller attaches and detaches from its internal ScrollController correctly — no memory leaks on dispose
   3. The package builds with zero runtime dependencies (Flutter SDK only) and passes dart analyze with no warnings
   4. The barrel export (lib/ai_chat_scroll.dart) exposes only AiChatScrollController and AiChatScrollView publicly
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 01-01-PLAN.md — Package scaffold, controller, widget stub, barrel export, and unit tests
 
 ### Phase 2: Sliver Composition
 **Goal**: AiChatScrollView renders a message list in reverse-chronological order using forward-growing CustomScrollView with an isolated FillerSliver — no jank on insertion
@@ -84,7 +86,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Controller Foundation | 0/? | Not started | - |
+| 1. Controller Foundation | 0/1 | Planning complete | - |
 | 2. Sliver Composition | 0/? | Not started | - |
 | 3. Streaming Anchor Behavior | 0/? | Not started | - |
 | 4. Polish and Publishing | 0/? | Not started | - |
