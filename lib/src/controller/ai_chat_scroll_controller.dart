@@ -94,6 +94,10 @@ class AiChatScrollController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Releases resources and detaches from any [ScrollController].
+  ///
+  /// Call this when the controller is no longer needed. After disposal,
+  /// do not call any other methods on this controller.
   @override
   void dispose() {
     _scrollController = null;
