@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. The barrel export (lib/ai_chat_scroll.dart) exposes only AiChatScrollController and AiChatScrollView publicly
 **Plans:** 1/1 plans complete
 Plans:
-- [ ] 01-01-PLAN.md — Package scaffold, controller, widget stub, barrel export, and unit tests
+- [x] 01-01-PLAN.md — Package scaffold, controller, widget stub, barrel export, and unit tests
 
 ### Phase 2: Sliver Composition
 **Goal**: AiChatScrollView renders a message list in reverse-chronological order using forward-growing CustomScrollView with an isolated FillerSliver — no jank on insertion
@@ -43,7 +43,9 @@ Plans:
   3. When the user has scrolled up into history, their scroll position is preserved after a new message is inserted
   4. The widget behaves correctly on both iOS (bouncing physics) and Android (clamping physics) without scroll physics fighting
   5. The FillerSliver updates its height without triggering a full message list rebuild
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 02-01-PLAN.md — Sliver composition: FillerSliver, builder API migration, and widget tests
 
 ### Phase 3: Streaming Anchor Behavior
 **Goal**: Sending a message snaps the user's message to the top of the viewport, AI response grows below it without auto-scroll, and user drag correctly cancels managed scroll behavior
@@ -87,7 +89,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Controller Foundation | 1/1 | Complete   | 2026-03-15 |
-| 2. Sliver Composition | 0/? | Not started | - |
+| 2. Sliver Composition | 0/1 | In progress | - |
 | 3. Streaming Anchor Behavior | 0/? | Not started | - |
 | 4. Polish and Publishing | 0/? | Not started | - |
 | 5. v1.x Enhancements | 0/? | Not started | - |
