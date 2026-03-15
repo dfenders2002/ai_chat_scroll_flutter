@@ -13,7 +13,7 @@ Build and publish a Flutter pub.dev package that implements the top-anchor-on-se
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Controller Foundation** - AiChatScrollController with lifecycle hooks, attach/detach delegation, and package scaffold (completed 2026-03-15)
-- [ ] **Phase 2: Sliver Composition** - AiChatScrollView with CustomScrollView, SliverList, and isolated FillerSliver
+- [x] **Phase 2: Sliver Composition** - AiChatScrollView with CustomScrollView, SliverList, and isolated FillerSliver (completed 2026-03-15)
 - [ ] **Phase 3: Streaming Anchor Behavior** - Dynamic filler recomputation, suppressed auto-scroll, and manual scroll resume
 - [ ] **Phase 4: Polish and Publishing** - Edge cases, example app, dartdoc, and pub.dev readiness
 - [ ] **Phase 5: v1.x Enhancements** - Scroll-to-bottom indicator and keyboard-aware compensation
@@ -43,9 +43,9 @@ Plans:
   3. When the user has scrolled up into history, their scroll position is preserved after a new message is inserted
   4. The widget behaves correctly on both iOS (bouncing physics) and Android (clamping physics) without scroll physics fighting
   5. The FillerSliver updates its height without triggering a full message list rebuild
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 02-01-PLAN.md — Sliver composition: FillerSliver, builder API migration, and widget tests
+- [x] 02-01-PLAN.md — Sliver composition: FillerSliver, builder API migration, and widget tests
 
 ### Phase 3: Streaming Anchor Behavior
 **Goal**: Sending a message snaps the user's message to the top of the viewport, AI response grows below it without auto-scroll, and user drag correctly cancels managed scroll behavior
@@ -60,7 +60,7 @@ Plans:
   6. A user drag during a managed scroll immediately cancels that scroll — the package does not resume control until onUserMessageSent() is called again
 **Plans:** 2 plans
 Plans:
-- [ ] 03-01-PLAN.md — Anchor jump, streaming filler recomputation, and controller state (ANCH-01 through ANCH-06)
+- [x] 03-01-PLAN.md — Anchor jump, streaming filler recomputation, and controller state (ANCH-01 through ANCH-06)
 - [ ] 03-02-PLAN.md — User drag cancellation via NotificationListener (API-04)
 
 ### Phase 4: Polish and Publishing
@@ -92,7 +92,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Controller Foundation | 1/1 | Complete   | 2026-03-15 |
-| 2. Sliver Composition | 0/1 | In progress | - |
-| 3. Streaming Anchor Behavior | 0/2 | Not started | - |
+| 2. Sliver Composition | 1/1 | Complete | 2026-03-15 |
+| 3. Streaming Anchor Behavior | 1/2 | In progress | - |
 | 4. Polish and Publishing | 0/? | Not started | - |
 | 5. v1.x Enhancements | 0/? | Not started | - |

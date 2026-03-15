@@ -16,12 +16,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Anchor Behavior
 
-- [ ] **ANCH-01**: When user sends a message, viewport snaps so the user's message is at the top of the viewport
-- [ ] **ANCH-02**: AI response streams below the user message, growing downward within the viewport
-- [ ] **ANCH-03**: Dynamic filler space is rendered below the AI response to keep the anchor stable during streaming
-- [ ] **ANCH-04**: No auto-scroll occurs during AI streaming — user stays positioned at their sent message
-- [ ] **ANCH-05**: If AI response exceeds the viewport, user must manually scroll down to see the rest
-- [ ] **ANCH-06**: When user scrolls up to history then sends a new message, viewport resets to top-anchor pattern with new message at top
+- [x] **ANCH-01**: When user sends a message, viewport snaps so the user's message is at the top of the viewport
+- [x] **ANCH-02**: AI response streams below the user message, growing downward within the viewport
+- [x] **ANCH-03**: Dynamic filler space is rendered below the AI response to keep the anchor stable during streaming
+- [x] **ANCH-04**: No auto-scroll occurs during AI streaming — user stays positioned at their sent message
+- [x] **ANCH-05**: If AI response exceeds the viewport, user must manually scroll down to see the rest
+- [x] **ANCH-06**: When user scrolls up to history then sends a new message, viewport resets to top-anchor pattern with new message at top
 
 ### API Surface
 
@@ -84,12 +84,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCRL-02 | Phase 2 | Complete |
 | SCRL-03 | Phase 2 | Complete |
 | SCRL-04 | Phase 2 | Complete |
-| ANCH-01 | Phase 3 | Pending |
-| ANCH-02 | Phase 3 | Pending |
-| ANCH-03 | Phase 3 | Pending |
-| ANCH-04 | Phase 3 | Pending |
-| ANCH-05 | Phase 3 | Pending |
-| ANCH-06 | Phase 3 | Pending |
+| ANCH-01 | Phase 3 | Complete |
+| ANCH-02 | Phase 3 | Complete |
+| ANCH-03 | Phase 3 | Complete |
+| ANCH-04 | Phase 3 | Complete |
+| ANCH-05 | Phase 3 | Complete |
+| ANCH-06 | Phase 3 | Complete |
 | API-04 | Phase 3 | Pending |
 | QUAL-01 | Phase 4 | Pending |
 | QUAL-02 | Phase 4 | Pending |
