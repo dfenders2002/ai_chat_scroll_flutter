@@ -25,8 +25,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### API Surface
 
-- [ ] **API-01**: Package exposes `AiChatScrollController` with `onUserMessageSent()` method to trigger anchor behavior
-- [ ] **API-02**: Package exposes `AiChatScrollController` with `onResponseComplete()` method to signal end of AI streaming
+- [x] **API-01**: Package exposes `AiChatScrollController` with `onUserMessageSent()` method to trigger anchor behavior
+- [x] **API-02**: Package exposes `AiChatScrollController` with `onResponseComplete()` method to signal end of AI streaming
 - [ ] **API-03**: Package exposes `AiChatScrollView` wrapper widget that devs wrap around their own message list
 - [ ] **API-04**: User drag cancels any managed scroll behavior — no re-hijacking until next `onUserMessageSent()`
 
@@ -40,7 +40,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **QUAL-01**: Package has proper pub.dev structure (pubspec.yaml, LICENSE, README, CHANGELOG)
 - [ ] **QUAL-02**: Package includes a working example app demonstrating the scroll behavior
 - [ ] **QUAL-03**: All public APIs have dartdoc documentation
-- [ ] **QUAL-04**: Package has zero runtime dependencies (Flutter SDK only)
+- [x] **QUAL-04**: Package has zero runtime dependencies (Flutter SDK only)
 - [ ] **QUAL-05**: Package passes `dart analyze` with no warnings and `pana` with a high score
 
 ## v2 Requirements
@@ -76,9 +76,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| API-01 | Phase 1 | Pending |
-| API-02 | Phase 1 | Pending |
-| QUAL-04 | Phase 1 | Pending |
+| API-01 | Phase 1 | Complete |
+| API-02 | Phase 1 | Complete |
+| QUAL-04 | Phase 1 | Complete |
 | API-03 | Phase 2 | Pending |
 | SCRL-01 | Phase 2 | Pending |
 | SCRL-02 | Phase 2 | Pending |
