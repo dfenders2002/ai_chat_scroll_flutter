@@ -73,7 +73,10 @@ Plans:
   3. dart pub publish --dry-run completes with zero warnings or errors
   4. The pana score is >= 120/160 (pub points sufficient for discoverability)
   5. README.md contains a minimal integration example that a developer can copy-paste to get the behavior working
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 04-01-PLAN.md — Metadata polish (README, CHANGELOG, pubspec) and dartdoc audit
+- [ ] 04-02-PLAN.md — Example app with streaming simulation and final pub.dev verification
 
 ### Phase 5: v1.x Enhancements
 **Goal**: Post-launch enhancements that improve UX for common scenarios — scroll-to-bottom indicator and keyboard-aware anchor compensation
@@ -94,5 +97,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Controller Foundation | 1/1 | Complete   | 2026-03-15 |
 | 2. Sliver Composition | 1/1 | Complete | 2026-03-15 |
 | 3. Streaming Anchor Behavior | 2/2 | Complete   | 2026-03-15 |
-| 4. Polish and Publishing | 0/? | Not started | - |
+| 4. Polish and Publishing | 0/2 | In Progress | - |
 | 5. v1.x Enhancements | 0/? | Not started | - |
