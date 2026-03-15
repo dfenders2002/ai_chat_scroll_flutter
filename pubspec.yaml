@@ -1,0 +1,22 @@
+name: ai_chat_scroll
+description: AI-chat-optimized scroll behavior. Anchors the user's message at the top of the viewport while the AI response streams below.
+version: 0.1.0
+homepage: https://github.com/yourusername/ai_chat_scroll
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+topics:
+  - chat
+  - scroll
+  - ai
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
