@@ -12,10 +12,9 @@ topics:
   - scroll
   - ai
 
-flutter:
-  platforms:
-    android:
-    ios:
+platforms:
+  android:
+  ios:
 
 dependencies:
   flutter:
