@@ -84,7 +84,8 @@ void main() {
           textDirection: TextDirection.ltr,
           child: AiChatScrollView(
             controller: controller,
-            child: const SizedBox(),
+            itemBuilder: (_, __) => const SizedBox.shrink(),
+            itemCount: 0,
           ),
         ),
       );
@@ -108,7 +109,8 @@ void main() {
           textDirection: TextDirection.ltr,
           child: AiChatScrollView(
             controller: controller,
-            child: const SizedBox(),
+            itemBuilder: (_, __) => const SizedBox.shrink(),
+            itemCount: 0,
           ),
         ),
       );
@@ -138,7 +140,8 @@ void main() {
           textDirection: TextDirection.ltr,
           child: AiChatScrollView(
             controller: controller,
-            child: const SizedBox(),
+            itemBuilder: (_, __) => const SizedBox.shrink(),
+            itemCount: 0,
           ),
         ),
       );
