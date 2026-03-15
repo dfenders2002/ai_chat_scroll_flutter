@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 04-polish-and-publishing 04-02-PLAN.md
-last_updated: "2026-03-15T18:27:26.822Z"
+stopped_at: Completed 05-v1x-enhancements 05-01-PLAN.md
+last_updated: "2026-03-15T18:35:55.129Z"
 last_activity: 2026-03-15 — Phase 4 Plan 01 executed
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
   percent: 83
 ---
 
@@ -57,6 +57,7 @@ Progress: [████████░░] 83%
 | Phase 03-streaming-anchor-behavior P02 | 2 | 1 tasks | 1 files |
 | Phase 04-polish-and-publishing P01 | 2 | 2 tasks | 5 files |
 | Phase 04-polish-and-publishing P02 | 2 | 2 tasks | 3 files |
+| Phase 05-v1x-enhancements P01 | 3 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,7 @@ Recent decisions affecting current work:
 - [Phase 04-polish-and-publishing]: ChatMessage.text is mutable to allow in-place word appending during streaming
 - [Phase 04-polish-and-publishing]: .pubignore added to exclude build/ and doc/ — reduced package from 13 MB to 13 KB
 - [Phase 04-polish-and-publishing]: platforms: key moved to top-level in pubspec.yaml (was incorrectly nested under flutter:)
+- [Phase 05-v1x-enhancements]: isAtBottom is signal-only ValueListenable — no built-in FAB widget shipped; atBottomThreshold on controller not widget
 
 ### Pending Todos
 
@@ -97,6 +99,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:24:33.220Z
-Stopped at: Completed 04-polish-and-publishing 04-02-PLAN.md
+Last session: 2026-03-15T18:35:55.127Z
+Stopped at: Completed 05-v1x-enhancements 05-01-PLAN.md
 Resume file: None
