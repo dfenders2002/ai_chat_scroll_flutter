@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
@@ -8,6 +9,22 @@ import 'package:flutter/widgets.dart';
 ///
 /// All methods are safe to call before the widget is mounted — they no-op
 /// gracefully rather than throwing.
+///
+/// ## Scroll-to-bottom indicator
+///
+/// Listen to [isAtBottom] to know when to show or hide a "scroll to bottom"
+/// floating action button or indicator:
+///
+/// ```dart
+/// ValueListenableBuilder<bool>(
+///   valueListenable: controller.isAtBottom,
+///   builder: (context, atBottom, _) {
+///     return atBottom ? const SizedBox.shrink() : MyScrollToBottomFab();
+///   },
+/// );
+/// ```
+///
+/// Call [scrollToBottom] to animate the list back to the latest messages.
 ///
 /// ## Typical usage
 ///
@@ -30,6 +47,12 @@ import 'package:flutter/widgets.dart';
 /// controller.dispose();
 /// ```
 class AiChatScrollController extends ChangeNotifier {
+  /// Creates an [AiChatScrollController].
+  ///
+  /// [atBottomThreshold] — logical pixels from [ScrollPosition.maxScrollExtent]
+  /// within which the user is considered "at the bottom". Defaults to 50.0.
+  AiChatScrollController({this.atBottomThreshold = 50.0});
+
   ScrollController? _scrollController;
 
   /// Whether an AI response is currently streaming.
@@ -41,6 +64,30 @@ class AiChatScrollController extends ChangeNotifier {
 
   /// Whether an AI response is currently streaming.
   bool get isStreaming => _streaming;
+
+  /// The distance from [ScrollPosition.maxScrollExtent] (in logical pixels)
+  /// within which the user is considered to be "at the bottom".
+  ///
+  /// Defaults to 50.0. Increase this to make the "at bottom" zone larger
+  /// (e.g. so a position 80px from the bottom still counts as "at bottom").
+  final double atBottomThreshold;
+
+  final ValueNotifier<bool> _isAtBottom = ValueNotifier(true);
+
+  /// Whether the scroll position is at (or near) the bottom of the list.
+  ///
+  /// Returns `true` when the distance from the current scroll position to
+  /// [ScrollPosition.maxScrollExtent] is within [atBottomThreshold].
+  ///
+  /// Listen to this [ValueListenable] to show or hide a scroll-to-bottom
+  /// indicator without rebuilding the entire widget tree.
+  ValueListenable<bool> get isAtBottom => _isAtBottom;
+
+  /// Updates the [isAtBottom] value. Called by [AiChatScrollView] when the
+  /// scroll position changes.
+  void updateIsAtBottom(bool value) {
+    _isAtBottom.value = value;
+  }
 
   /// Attaches this controller to the [ScrollController] owned by
   /// [AiChatScrollView]. Called automatically during widget initialization.
@@ -94,12 +141,30 @@ class AiChatScrollController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Animates the scroll position to the bottom of the message list.
+  ///
+  /// Use this to implement a "scroll to bottom" button or FAB. Safe to call
+  /// before the widget is mounted — no-ops gracefully.
+  ///
+  /// The scroll animation uses a 300 ms [Curves.easeOut] curve.
+  /// [isAtBottom] will become `true` as the animation completes and the
+  /// scroll listener detects the new position.
+  void scrollToBottom() {
+    if (_scrollController == null || !_scrollController!.hasClients) return;
+    _scrollController!.animateTo(
+      _scrollController!.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
+
   /// Releases resources and detaches from any [ScrollController].
   ///
   /// Call this when the controller is no longer needed. After disposal,
   /// do not call any other methods on this controller.
   @override
   void dispose() {
+    _isAtBottom.dispose();
     _scrollController = null;
     super.dispose();
   }

@@ -234,6 +234,14 @@ class _AiChatScrollViewState extends State<AiChatScrollView> {
   // ——— Filler recomputation ————————————————————————————————————————————————
 
   void _onScrollChanged() {
+    // Always track isAtBottom, regardless of anchor state.
+    if (_scrollController.hasClients) {
+      final pos = _scrollController.position;
+      final atBottom =
+          pos.maxScrollExtent - pos.pixels <= widget.controller.atBottomThreshold;
+      widget.controller.updateIsAtBottom(atBottom);
+    }
+
     if (!_anchorActive || !_scrollController.hasClients) return;
     if (_fillerUpdateScheduled) return;
     _fillerUpdateScheduled = true;
