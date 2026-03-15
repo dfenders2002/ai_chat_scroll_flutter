@@ -76,13 +76,33 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (Populated during roadmap creation) | | |
+| API-01 | Phase 1 | Pending |
+| API-02 | Phase 1 | Pending |
+| QUAL-04 | Phase 1 | Pending |
+| API-03 | Phase 2 | Pending |
+| SCRL-01 | Phase 2 | Pending |
+| SCRL-02 | Phase 2 | Pending |
+| SCRL-03 | Phase 2 | Pending |
+| SCRL-04 | Phase 2 | Pending |
+| ANCH-01 | Phase 3 | Pending |
+| ANCH-02 | Phase 3 | Pending |
+| ANCH-03 | Phase 3 | Pending |
+| ANCH-04 | Phase 3 | Pending |
+| ANCH-05 | Phase 3 | Pending |
+| ANCH-06 | Phase 3 | Pending |
+| API-04 | Phase 3 | Pending |
+| QUAL-01 | Phase 4 | Pending |
+| QUAL-02 | Phase 4 | Pending |
+| QUAL-03 | Phase 4 | Pending |
+| QUAL-05 | Phase 4 | Pending |
+| ENHN-01 | Phase 5 | Pending |
+| ENHN-02 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17 ⚠️
+- v1 requirements: 21 total
+- Mapped to phases: 21
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-15*
-*Last updated: 2026-03-15 after initial definition*
+*Last updated: 2026-03-15 after roadmap creation*
