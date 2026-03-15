@@ -6,60 +6,21 @@ import 'package:flutter/widgets.dart';
 import '../controller/ai_chat_scroll_controller.dart';
 import 'filler_sliver.dart';
 
-/// A scrollable view for AI chat interfaces that composes a message list and
-/// a dynamic filler sliver.
+/// A scrollable view for AI chat interfaces with anchor-on-send behavior.
 ///
-/// Pass [itemBuilder] and [itemCount] to supply your message items. This widget
-/// owns the [CustomScrollView] and internal [ScrollController] so it can
-/// compose slivers (message list + filler) required for the top-anchor-on-send
-/// behavior.
+/// ## Chat gravity
+///
+/// Messages gravity-anchor to the bottom of the viewport. Few messages
+/// appear at the bottom with space above, like Claude and ChatGPT.
 ///
 /// ## Anchor behavior
 ///
-/// When [AiChatScrollController.onUserMessageSent] is called, this widget
-/// snaps the scroll position so the sent message (the last item at call time)
-/// appears at the top of the viewport. As the AI response streams in, the
-/// filler sliver shrinks to keep the anchor stable without any scroll movement.
-/// When the user drags the list, the anchor is cancelled and the user scrolls
-/// freely.
+/// When [AiChatScrollController.onUserMessageSent] is called, the viewport
+/// snaps so the sent message is at the top. The AI response streams below it
+/// and a dynamic filler fills the remaining viewport space. The user cannot
+/// scroll past the filler — only iOS bounce/stretch at the edge.
 ///
-/// The filler sliver sits below the message list and is driven by an internal
-/// [ValueNotifier]. Because it is isolated via [ValueListenableBuilder], filler
-/// height changes during AI response streaming do NOT trigger rebuilds of the
-/// message list items.
-///
-/// No [ScrollPhysics] is forced — the widget inherits the ambient
-/// [ScrollConfiguration] so that platform-appropriate physics (bouncing on iOS,
-/// clamping on Android) are applied automatically.
-///
-/// ## Keyboard awareness
-///
-/// During an active anchor, this widget automatically compensates for soft
-/// keyboard open/close events. When the viewport dimension changes (e.g. the
-/// soft keyboard opens and shrinks the visible area), the filler sliver is
-/// recomputed by the exact viewport delta so the anchored message remains at
-/// the top of the visible area. When the keyboard closes and the viewport grows,
-/// the filler is expanded by the same delta.
-///
-/// Outside of anchor mode, keyboard events are handled by Flutter's normal
-/// scroll behavior — this widget does not interfere.
-///
-/// Filler height is always clamped to 0.0 and never goes negative, ensuring
-/// correctness even when the AI response already exceeds the visible area.
-///
-/// ## Example
-///
-/// ```dart
-/// AiChatScrollView(
-///   controller: myAiChatScrollController,
-///   itemCount: messages.length,
-///   itemBuilder: (context, index) => MessageTile(messages[index]),
-/// )
-/// ```
-///
-/// > **Note:** Pass messages in chronological order (index 0 = oldest,
-/// > last index = newest). The [AiChatScrollView] renders items top-to-bottom,
-/// > producing the conventional newest-at-bottom chat layout.
+/// Pass messages in chronological order (index 0 = oldest).
 class AiChatScrollView extends StatefulWidget {
   /// Creates an [AiChatScrollView].
   const AiChatScrollView({
@@ -85,25 +46,36 @@ class AiChatScrollView extends StatefulWidget {
 class _AiChatScrollViewState extends State<AiChatScrollView> {
   late final ScrollController _scrollController;
   late final ValueNotifier<double> _fillerHeight;
+  late final ValueNotifier<double> _topSpacerHeight;
 
   // Anchor state
   bool _anchorActive = false;
   int _anchorIndex = -1;
-  double _lastMaxScrollExtent = 0.0;
-  bool _fillerUpdateScheduled = false;
   final GlobalKey _anchorKey = GlobalKey();
 
-  // Keyboard compensation state
-  double _lastViewportDimension = 0.0;
+  /// The scroll offset of content above the anchor item. Recorded at anchor
+  /// jump time and constant during the anchor lifecycle. Used by the
+  /// self-correcting filler formula.
+  double _contentAboveAnchor = 0.0;
+
+  // Track previous itemCount for auto-scroll
+  int _previousItemCount = 0;
 
   @override
   void initState() {
     super.initState();
     _fillerHeight = ValueNotifier(0.0);
+    _topSpacerHeight = ValueNotifier(0.0);
     _scrollController = ScrollController();
     _scrollController.addListener(_onScrollChanged);
     widget.controller.attach(_scrollController);
     widget.controller.addListener(_onControllerChanged);
+    _previousItemCount = widget.itemCount;
+
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _updateTopSpacer();
+      _scrollToBottom();
+    });
   }
 
   @override
@@ -115,6 +87,22 @@ class _AiChatScrollViewState extends State<AiChatScrollView> {
       widget.controller.attach(_scrollController);
       widget.controller.addListener(_onControllerChanged);
     }
+
+    if (widget.itemCount != _previousItemCount) {
+      _previousItemCount = widget.itemCount;
+      if (!_anchorActive && !widget.controller.isStreaming) {
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_scrollController.hasClients) return;
+          _updateTopSpacer();
+          final pos = _scrollController.position;
+          final nearBottom = pos.maxScrollExtent - pos.pixels <=
+              widget.controller.atBottomThreshold + 100;
+          if (nearBottom) {
+            _scrollToBottom();
+          }
+        });
+      }
+    }
   }
 
   @override
@@ -122,38 +110,63 @@ class _AiChatScrollViewState extends State<AiChatScrollView> {
     widget.controller.removeListener(_onControllerChanged);
     widget.controller.detach();
     _scrollController.removeListener(_onScrollChanged);
+    _topSpacerHeight.dispose();
     _fillerHeight.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
+  // ——— Top spacer (chat gravity) ——————————————————————————————————————————
+
+  void _updateTopSpacer() {
+    if (!mounted || !_scrollController.hasClients) return;
+    if (_anchorActive || widget.controller.isStreaming) {
+      _topSpacerHeight.value = 0.0;
+      return;
+    }
+
+    final pos = _scrollController.position;
+    final viewport = pos.viewportDimension;
+    final totalContent = pos.maxScrollExtent + viewport;
+    final currentSpacer = _topSpacerHeight.value;
+    final currentFiller = _fillerHeight.value;
+    final messageContent = totalContent - currentSpacer - currentFiller;
+    _topSpacerHeight.value = math.max(0.0, viewport - messageContent);
+  }
+
+  void _scrollToBottom() {
+    if (!mounted || !_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    if (pos.maxScrollExtent > 0) {
+      _scrollController.jumpTo(pos.maxScrollExtent);
+    }
+  }
+
+  // ——— Anchor lifecycle ——————————————————————————————————————————————————
+
   void _onControllerChanged() {
     if (widget.controller.isStreaming) {
-      final anchorIdx = widget.itemCount - 1;
-
-      // setState to apply the GlobalKey to the anchor item in the next build.
-      setState(() {
-        _anchorIndex = anchorIdx;
-      });
-
-      // Schedule the anchor jump for after the rebuild+layout.
-      // The item may or may not be visible at this point:
-      // - If it's visible (within the current scroll viewport), the GlobalKey
-      //   will be attached after the rebuild and we can measure it directly.
-      // - If it's outside the lazy render window, we need to scroll there first.
-      //
-      // Strategy: First scroll to the bottom (ensuring the last item is in the
-      // render tree), then in the next postFrameCallback, measure and set filler,
-      // then in the next frame, execute the final jump.
-      //
-      // To avoid "dead frames" (frames that don't schedule new frames because
-      // jumpTo is a no-op), we use scheduleFrame() after setting filler to
-      // ensure the layout update triggers a frame.
+      // Defer to AFTER parent rebuilds with new itemCount.
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        _scrollToBottomForMeasurement();
+        if (!mounted || !_scrollController.hasClients) return;
+
+        // Clear spacers from previous state.
+        _topSpacerHeight.value = 0.0;
+        _fillerHeight.value = 0.0;
+
+        final anchorIdx = widget.itemCount - 1;
+        setState(() {
+          _anchorIndex = anchorIdx;
+        });
+
+        // After rebuild (GlobalKey attached), measure and anchor.
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          _performAnchorJump();
+        });
       });
     } else {
-      // onResponseComplete
+      // onResponseComplete — stop managing scroll. Filler persists so layout
+      // stays: user msg at top, AI response below, filler fills the rest.
       setState(() {
         _anchorActive = false;
         _anchorIndex = -1;
@@ -161,152 +174,85 @@ class _AiChatScrollViewState extends State<AiChatScrollView> {
     }
   }
 
-  /// Phase 1: Scroll to the bottom so the anchor item is in the render tree.
-  /// Then schedule Phase 2 for measurement and filler setup.
-  void _scrollToBottomForMeasurement() {
+  void _performAnchorJump() {
     if (!mounted || !_scrollController.hasClients) return;
 
     final pos = _scrollController.position;
 
-    // Jump to the current maxScrollExtent to bring the last item into view.
-    // If the item is already visible (maxScrollExtent = 0), this is a no-op,
-    // but the item should already be attached to the GlobalKey from the setState rebuild.
+    // Scroll to bottom to ensure anchor item is in the render tree.
     if (pos.maxScrollExtent > pos.pixels) {
       _scrollController.jumpTo(pos.maxScrollExtent);
-      // jumpTo triggers a scroll update notification, which schedules a frame.
-      // Register Phase 2 to fire after that frame.
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        _measureAndSetFiller();
-      });
-    } else {
-      // Item is already visible (or maxScrollExtent <= pixels).
-      // We can measure immediately in the next postFrameCallback.
-      // But we need to ensure a frame is drawn so layout is fresh.
-      // Force a frame schedule.
-      SchedulerBinding.instance.scheduleFrame();
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        _measureAndSetFiller();
-      });
     }
-  }
 
-  /// Phase 2: Measure the anchor item height and set the initial filler.
-  /// Then schedule Phase 3 for the final jump.
-  void _measureAndSetFiller() {
-    if (!mounted || !_scrollController.hasClients) return;
-
-    final pos = _scrollController.position;
-    final viewportDimension = pos.viewportDimension;
-
-    // Read anchor item height via GlobalKey.
-    final box = _anchorKey.currentContext?.findRenderObject() as RenderBox?;
-    final sentMsgHeight = box?.size.height ?? 60.0;
-
-    // Set filler: viewportDimension - sentMsgHeight.
-    // Derivation:
-    //   target (desired pixels) = total_content_without_filler - sentMsgHeight
-    //                           = original_maxScrollExtent + viewportDimension - sentMsgHeight
-    //   new_maxScrollExtent = original_maxScrollExtent + filler
-    //   filler = viewportDimension - sentMsgHeight
-    //   => new_maxScrollExtent = original_maxScrollExtent + viewportDimension - sentMsgHeight
-    //                          = target
-    //   => jump to new_maxScrollExtent
-    final initialFiller = math.max(0.0, viewportDimension - sentMsgHeight);
-    _fillerHeight.value = initialFiller;
-
-    // The ValueNotifier update schedules a rebuild of the FillerSliver,
-    // but we need the layout to complete before reading the updated
-    // maxScrollExtent. Schedule a frame and then do the final jump.
-    // Since _fillerHeight.value changed, Flutter will schedule a rebuild
-    // automatically (via ValueListenableBuilder). We add a postFrameCallback
-    // for after that rebuild+layout.
-    //
-    // Also force a frame if the content fits entirely (maxScrollExtent stays 0):
-    // in that case, the filler update causes a layout change but may not
-    // schedule a new animation frame on its own in test mode.
     SchedulerBinding.instance.scheduleFrame();
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      _executeAnchorJump();
-    });
-  }
+      if (!mounted || !_scrollController.hasClients) return;
 
-  /// Phase 3: Execute the final anchor jump using the updated maxScrollExtent.
-  void _executeAnchorJump() {
-    if (!mounted || !_scrollController.hasClients) return;
+      final box = _anchorKey.currentContext?.findRenderObject() as RenderBox?;
+      if (box == null) {
+        _performAnchorJump(); // Retry if not rendered.
+        return;
+      }
 
-    final pos = _scrollController.position;
-
-    // After Phase 2 set filler = viewportDimension - sentMsgHeight, the
-    // new maxScrollExtent = original_maxScrollExtent + filler = target.
-    // Jumping to maxScrollExtent places the anchor item's top at the viewport top.
-    final target = pos.maxScrollExtent.clamp(
-      pos.minScrollExtent,
-      pos.maxScrollExtent,
-    );
-
-    _anchorActive = true;
-    _scrollController.jumpTo(target);
-    _lastMaxScrollExtent = _scrollController.position.maxScrollExtent;
-    _lastViewportDimension = _scrollController.position.viewportDimension;
-  }
-
-  // ——— Filler recomputation ————————————————————————————————————————————————
-
-  void _onScrollChanged() {
-    // Always track isAtBottom, regardless of anchor state.
-    if (_scrollController.hasClients) {
       final pos = _scrollController.position;
-      final atBottom =
-          pos.maxScrollExtent - pos.pixels <= widget.controller.atBottomThreshold;
-      widget.controller.updateIsAtBottom(atBottom);
-    }
+      final viewport = pos.viewportDimension;
+      final anchorHeight = box.size.height;
 
-    if (!_anchorActive || !_scrollController.hasClients) return;
-    if (_fillerUpdateScheduled) return;
-    _fillerUpdateScheduled = true;
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _fillerUpdateScheduled = false;
-      _recomputeFiller();
+      // Set filler = viewport - anchorHeight. This makes:
+      // totalContent = contentAboveAnchor + anchorHeight + filler
+      //              = contentAboveAnchor + viewport
+      // maxScrollExtent = contentAboveAnchor
+      // At maxScrollExtent: anchor is at viewport top. ✓
+      _fillerHeight.value = math.max(0.0, viewport - anchorHeight);
+
+      // After filler layout update, jump to final position.
+      SchedulerBinding.instance.scheduleFrame();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_scrollController.hasClients) return;
+        final pos = _scrollController.position;
+
+        _anchorActive = true;
+        _contentAboveAnchor = pos.maxScrollExtent;
+        _scrollController.jumpTo(pos.maxScrollExtent);
+      });
     });
   }
+
+  // ——— Filler recomputation (self-correcting absolute formula) ———————————
 
   void _recomputeFiller() {
     if (!_anchorActive || !_scrollController.hasClients) return;
+
     final pos = _scrollController.position;
-    _lastViewportDimension = pos.viewportDimension; // keep current for keyboard detection
-    final growth = pos.maxScrollExtent - _lastMaxScrollExtent;
-    if (growth > 0) {
-      _fillerHeight.value = math.max(0.0, _fillerHeight.value - growth);
-      _lastMaxScrollExtent = pos.maxScrollExtent;
+
+    // Self-correcting formula:
+    // correctFiller = currentFiller + contentAboveAnchor - maxScrollExtent
+    //
+    // When AI response grows by N, maxScrollExtent grows by N.
+    // Formula: filler -= N. After filler layout update, maxScrollExtent
+    // shrinks back. Formula re-evaluates to the same value (stable).
+    final currentFiller = _fillerHeight.value;
+    final correctFiller =
+        math.max(0.0, currentFiller + _contentAboveAnchor - pos.maxScrollExtent);
+
+    if ((currentFiller - correctFiller).abs() > 0.5) {
+      _fillerHeight.value = correctFiller;
     }
   }
 
-  // ——— Keyboard compensation ———————————————————————————————————————————————
+  // ——— Scroll tracking ——————————————————————————————————————————————————
 
-  /// Called when [ScrollMetricsNotification] reports a new [viewportDimension]
-  /// while the anchor is active. Adjusts the filler by the delta so the anchored
-  /// message remains at the top of the visible area.
-  ///
-  /// - delta < 0: viewport shrank (soft keyboard opened) → filler shrinks.
-  /// - delta > 0: viewport grew (soft keyboard closed) → filler grows.
-  ///
-  /// Filler is clamped to 0.0 to prevent negative values when the response
-  /// already exceeds the visible area.
-  void _onViewportDimensionChanged(double newViewportDimension) {
-    final delta = newViewportDimension - _lastViewportDimension;
-    _lastViewportDimension = newViewportDimension;
+  void _onScrollChanged() {
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    final atBottom =
+        pos.maxScrollExtent - pos.pixels <= widget.controller.atBottomThreshold;
+    widget.controller.updateIsAtBottom(atBottom);
 
-    // delta > 0 means viewport grew (keyboard closed) -> filler grows
-    // delta < 0 means viewport shrank (keyboard opened) -> filler shrinks
-    _fillerHeight.value = math.max(0.0, _fillerHeight.value + delta);
-
-    // After filler change, re-anchor to keep sent message at viewport top.
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_scrollController.hasClients) return;
-      final pos = _scrollController.position;
-      _scrollController.jumpTo(pos.maxScrollExtent);
-      _lastMaxScrollExtent = pos.maxScrollExtent;
-    });
+    // Recompute filler during anchor.
+    if (_anchorActive) {
+      _recomputeFiller();
+    }
   }
 
   // ——— Build ——————————————————————————————————————————————————————————————
@@ -322,11 +268,8 @@ class _AiChatScrollViewState extends State<AiChatScrollView> {
       },
       child: NotificationListener<ScrollMetricsNotification>(
         onNotification: (notification) {
-          final currentVD = notification.metrics.viewportDimension;
-          if (_anchorActive &&
-              _lastViewportDimension > 0.0 &&
-              currentVD != _lastViewportDimension) {
-            _onViewportDimensionChanged(currentVD);
+          if (_anchorActive) {
+            _recomputeFiller();
           }
           _onScrollChanged();
           return false;
@@ -334,6 +277,11 @@ class _AiChatScrollViewState extends State<AiChatScrollView> {
         child: CustomScrollView(
           controller: _scrollController,
           slivers: [
+            // Top spacer — pushes messages to bottom (chat gravity).
+            SliverToBoxAdapter(
+              child: FillerSliver(fillerHeight: _topSpacerHeight),
+            ),
+            // Message list.
             SliverList.builder(
               itemCount: widget.itemCount,
               itemBuilder: (context, index) {
@@ -344,6 +292,7 @@ class _AiChatScrollViewState extends State<AiChatScrollView> {
                 return child;
               },
             ),
+            // Bottom filler — maintains anchor position during streaming.
             SliverToBoxAdapter(
               child: FillerSliver(fillerHeight: _fillerHeight),
             ),

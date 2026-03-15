@@ -73,41 +73,52 @@ class _ChatScreenState extends State<ChatScreen> {
 
     _textController.clear();
 
-    // Add user message and empty AI placeholder.
+    // Step 1: Add ONLY the user message.
     setState(() {
       _messages.add(ChatMessage(text: userText, isUser: true));
-      _messages.add(ChatMessage(text: '', isUser: false));
-      _isStreaming = true;
     });
 
-    // Trigger anchor behavior.
+    // Step 2: Trigger anchor — this will anchor YOUR message at the top
+    // of the viewport (it's the last item right now).
     _controller.onUserMessageSent();
 
-    // Stream canned response word by word.
-    final words = _cannedResponse.split(' ');
-    int wordIndex = 0;
-    final aiMessage = _messages.last;
+    // Step 3: After a short delay, add the AI placeholder and start streaming.
+    // The AI response appears BELOW your anchored message.
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (!mounted) return;
 
-    _streamTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
+      setState(() {
+        _messages.add(ChatMessage(text: '', isUser: false));
+        _isStreaming = true;
+      });
 
-      if (wordIndex < words.length) {
-        setState(() {
-          aiMessage.text = wordIndex == 0
-              ? words[0]
-              : '${aiMessage.text} ${words[wordIndex]}';
-        });
-        wordIndex++;
-      } else {
-        timer.cancel();
-        _controller.onResponseComplete();
-        setState(() {
-          _isStreaming = false;
-        });
-      }
+      // Stream canned response word by word.
+      final words = _cannedResponse.split(' ');
+      int wordIndex = 0;
+      final aiMessage = _messages.last;
+
+      _streamTimer =
+          Timer.periodic(const Duration(milliseconds: 50), (timer) {
+        if (!mounted) {
+          timer.cancel();
+          return;
+        }
+
+        if (wordIndex < words.length) {
+          setState(() {
+            aiMessage.text = wordIndex == 0
+                ? words[0]
+                : '${aiMessage.text} ${words[wordIndex]}';
+          });
+          wordIndex++;
+        } else {
+          timer.cancel();
+          _controller.onResponseComplete();
+          setState(() {
+            _isStreaming = false;
+          });
+        }
+      });
     });
   }
 
