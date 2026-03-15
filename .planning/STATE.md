@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-controller-foundation 01-01-PLAN.md
-last_updated: "2026-03-15T17:10:23.277Z"
+stopped_at: Completed 02-sliver-composition 02-01-PLAN.md
+last_updated: "2026-03-15T17:25:01.110Z"
 last_activity: 2026-03-15 — Phase 1 Plan 01 executed
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
   percent: 100
 ---
 
@@ -50,6 +50,7 @@ Progress: [██████████] 100%
 - Trend: baseline
 
 *Updated after each plan completion*
+| Phase 02-sliver-composition P01 | 3 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,9 @@ Recent decisions affecting current work:
 - [Phase 01-controller-foundation]: AiChatScrollController extends ChangeNotifier (delegate pattern), not ScrollController — keeps public API domain-only
 - [Phase 01-controller-foundation]: SchedulerBinding.instance.addPostFrameCallback for scroll dispatch — guarantees post-layout execution, race-condition-free
 - [Phase 01-controller-foundation]: Phase 1 uses child: Widget stub API in AiChatScrollView — Phase 2 needs to decide builder-vs-child before sliver composition
+- [Phase 02-sliver-composition]: AiChatScrollView uses itemBuilder/itemCount API — owns CustomScrollView for sliver composition
+- [Phase 02-sliver-composition]: FillerSliver isolation via ValueNotifier/ValueListenableBuilder prevents full-list rebuilds during streaming
+- [Phase 02-sliver-composition]: No physics param on CustomScrollView — inherits ambient ScrollConfiguration for platform-appropriate behavior
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T17:07:27.756Z
-Stopped at: Completed 01-controller-foundation 01-01-PLAN.md
+Last session: 2026-03-15T17:25:01.108Z
+Stopped at: Completed 02-sliver-composition 02-01-PLAN.md
 Resume file: None

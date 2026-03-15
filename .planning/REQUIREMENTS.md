@@ -9,10 +9,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Scroll Core
 
-- [ ] **SCRL-01**: Chat displays messages in reverse-chronological order (newest at bottom, older above)
-- [ ] **SCRL-02**: No visible scroll jank when new messages are inserted into the list
-- [ ] **SCRL-03**: Scroll position is preserved when user has scrolled up into message history
-- [ ] **SCRL-04**: Works correctly on both iOS (bouncing physics) and Android (clamping physics)
+- [x] **SCRL-01**: Chat displays messages in reverse-chronological order (newest at bottom, older above)
+- [x] **SCRL-02**: No visible scroll jank when new messages are inserted into the list
+- [x] **SCRL-03**: Scroll position is preserved when user has scrolled up into message history
+- [x] **SCRL-04**: Works correctly on both iOS (bouncing physics) and Android (clamping physics)
 
 ### Anchor Behavior
 
@@ -27,7 +27,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **API-01**: Package exposes `AiChatScrollController` with `onUserMessageSent()` method to trigger anchor behavior
 - [x] **API-02**: Package exposes `AiChatScrollController` with `onResponseComplete()` method to signal end of AI streaming
-- [ ] **API-03**: Package exposes `AiChatScrollView` wrapper widget that devs wrap around their own message list
+- [x] **API-03**: Package exposes `AiChatScrollView` wrapper widget that devs wrap around their own message list
 - [ ] **API-04**: User drag cancels any managed scroll behavior — no re-hijacking until next `onUserMessageSent()`
 
 ### Enhancements
@@ -79,11 +79,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | API-01 | Phase 1 | Complete |
 | API-02 | Phase 1 | Complete |
 | QUAL-04 | Phase 1 | Complete |
-| API-03 | Phase 2 | Pending |
-| SCRL-01 | Phase 2 | Pending |
-| SCRL-02 | Phase 2 | Pending |
-| SCRL-03 | Phase 2 | Pending |
-| SCRL-04 | Phase 2 | Pending |
+| API-03 | Phase 2 | Complete |
+| SCRL-01 | Phase 2 | Complete |
+| SCRL-02 | Phase 2 | Complete |
+| SCRL-03 | Phase 2 | Complete |
+| SCRL-04 | Phase 2 | Complete |
 | ANCH-01 | Phase 3 | Pending |
 | ANCH-02 | Phase 3 | Pending |
 | ANCH-03 | Phase 3 | Pending |
