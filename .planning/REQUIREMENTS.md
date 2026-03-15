@@ -28,7 +28,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **API-01**: Package exposes `AiChatScrollController` with `onUserMessageSent()` method to trigger anchor behavior
 - [x] **API-02**: Package exposes `AiChatScrollController` with `onResponseComplete()` method to signal end of AI streaming
 - [x] **API-03**: Package exposes `AiChatScrollView` wrapper widget that devs wrap around their own message list
-- [ ] **API-04**: User drag cancels any managed scroll behavior — no re-hijacking until next `onUserMessageSent()`
+- [x] **API-04**: User drag cancels any managed scroll behavior — no re-hijacking until next `onUserMessageSent()`
 
 ### Enhancements
 
@@ -90,7 +90,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ANCH-04 | Phase 3 | Complete |
 | ANCH-05 | Phase 3 | Complete |
 | ANCH-06 | Phase 3 | Complete |
-| API-04 | Phase 3 | Pending |
+| API-04 | Phase 3 | Complete |
 | QUAL-01 | Phase 4 | Pending |
 | QUAL-02 | Phase 4 | Pending |
 | QUAL-03 | Phase 4 | Pending |

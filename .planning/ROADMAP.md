@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Controller Foundation** - AiChatScrollController with lifecycle hooks, attach/detach delegation, and package scaffold (completed 2026-03-15)
 - [x] **Phase 2: Sliver Composition** - AiChatScrollView with CustomScrollView, SliverList, and isolated FillerSliver (completed 2026-03-15)
-- [ ] **Phase 3: Streaming Anchor Behavior** - Dynamic filler recomputation, suppressed auto-scroll, and manual scroll resume
+- [x] **Phase 3: Streaming Anchor Behavior** - Dynamic filler recomputation, suppressed auto-scroll, and manual scroll resume (completed 2026-03-15)
 - [ ] **Phase 4: Polish and Publishing** - Edge cases, example app, dartdoc, and pub.dev readiness
 - [ ] **Phase 5: v1.x Enhancements** - Scroll-to-bottom indicator and keyboard-aware compensation
 
@@ -58,7 +58,7 @@ Plans:
   4. If the AI response grows longer than the viewport, the user can manually scroll down to read the rest and the package does not re-hijack scroll position
   5. When the user has scrolled up to read old messages and then sends a new message, the viewport resets and the new message anchors at the top
   6. A user drag during a managed scroll immediately cancels that scroll — the package does not resume control until onUserMessageSent() is called again
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 03-01-PLAN.md — Anchor jump, streaming filler recomputation, and controller state (ANCH-01 through ANCH-06)
 - [ ] 03-02-PLAN.md — User drag cancellation via NotificationListener (API-04)
@@ -93,6 +93,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Controller Foundation | 1/1 | Complete   | 2026-03-15 |
 | 2. Sliver Composition | 1/1 | Complete | 2026-03-15 |
-| 3. Streaming Anchor Behavior | 1/2 | In progress | - |
+| 3. Streaming Anchor Behavior | 2/2 | Complete   | 2026-03-15 |
 | 4. Polish and Publishing | 0/? | Not started | - |
 | 5. v1.x Enhancements | 0/? | Not started | - |
