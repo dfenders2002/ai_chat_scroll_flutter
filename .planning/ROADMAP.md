@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Controller Foundation** - AiChatScrollController with lifecycle hooks, attach/detach delegation, and package scaffold (completed 2026-03-15)
 - [x] **Phase 2: Sliver Composition** - AiChatScrollView with CustomScrollView, SliverList, and isolated FillerSliver (completed 2026-03-15)
 - [x] **Phase 3: Streaming Anchor Behavior** - Dynamic filler recomputation, suppressed auto-scroll, and manual scroll resume (completed 2026-03-15)
-- [ ] **Phase 4: Polish and Publishing** - Edge cases, example app, dartdoc, and pub.dev readiness
+- [x] **Phase 4: Polish and Publishing** - Edge cases, example app, dartdoc, and pub.dev readiness (completed 2026-03-15)
 - [ ] **Phase 5: v1.x Enhancements** - Scroll-to-bottom indicator and keyboard-aware compensation
 
 ## Phase Details
@@ -73,7 +73,7 @@ Plans:
   3. dart pub publish --dry-run completes with zero warnings or errors
   4. The pana score is >= 120/160 (pub points sufficient for discoverability)
   5. README.md contains a minimal integration example that a developer can copy-paste to get the behavior working
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 04-01-PLAN.md — Metadata polish (README, CHANGELOG, pubspec) and dartdoc audit
 - [ ] 04-02-PLAN.md — Example app with streaming simulation and final pub.dev verification
@@ -97,5 +97,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Controller Foundation | 1/1 | Complete   | 2026-03-15 |
 | 2. Sliver Composition | 1/1 | Complete | 2026-03-15 |
 | 3. Streaming Anchor Behavior | 2/2 | Complete   | 2026-03-15 |
-| 4. Polish and Publishing | 0/2 | In Progress | - |
+| 4. Polish and Publishing | 2/2 | Complete   | 2026-03-15 |
 | 5. v1.x Enhancements | 0/? | Not started | - |

@@ -38,7 +38,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Package Quality
 
 - [x] **QUAL-01**: Package has proper pub.dev structure (pubspec.yaml, LICENSE, README, CHANGELOG)
-- [ ] **QUAL-02**: Package includes a working example app demonstrating the scroll behavior
+- [x] **QUAL-02**: Package includes a working example app demonstrating the scroll behavior
 - [x] **QUAL-03**: All public APIs have dartdoc documentation
 - [x] **QUAL-04**: Package has zero runtime dependencies (Flutter SDK only)
 - [x] **QUAL-05**: Package passes `dart analyze` with no warnings and `pana` with a high score
@@ -92,7 +92,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ANCH-06 | Phase 3 | Complete |
 | API-04 | Phase 3 | Complete |
 | QUAL-01 | Phase 4 | Complete |
-| QUAL-02 | Phase 4 | Pending |
+| QUAL-02 | Phase 4 | Complete |
 | QUAL-03 | Phase 4 | Complete |
 | QUAL-05 | Phase 4 | Complete |
 | ENHN-01 | Phase 5 | Pending |

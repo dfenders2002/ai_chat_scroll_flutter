@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 04-polish-and-publishing 04-01-PLAN.md
-last_updated: "2026-03-15T18:20:46.370Z"
+stopped_at: Completed 04-polish-and-publishing 04-02-PLAN.md
+last_updated: "2026-03-15T18:24:33.221Z"
 last_activity: 2026-03-15 — Phase 4 Plan 01 executed
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 6
-  completed_plans: 5
-  percent: 60
+  completed_plans: 6
+  percent: 83
 ---
 
 # Project State
@@ -56,6 +56,7 @@ Progress: [████████░░] 83%
 | Phase 03-streaming-anchor-behavior P01 | 45 | 2 tasks | 4 files |
 | Phase 03-streaming-anchor-behavior P02 | 2 | 1 tasks | 1 files |
 | Phase 04-polish-and-publishing P01 | 2 | 2 tasks | 5 files |
+| Phase 04-polish-and-publishing P02 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,9 @@ Recent decisions affecting current work:
 - [Phase 03-streaming-anchor-behavior]: NotificationListener<ScrollUpdateNotification> drag detection was pre-implemented in Plan 03-01 — Plan 03-02 only added dedicated tests, no code changes needed
 - [Phase 04-polish-and-publishing]: README uses itemBuilder/itemCount API matching current AiChatScrollView implementation
 - [Phase 04-polish-and-publishing]: pubspec.yaml flutter.platforms declaration added for pub.dev pana scoring
+- [Phase 04-polish-and-publishing]: ChatMessage.text is mutable to allow in-place word appending during streaming
+- [Phase 04-polish-and-publishing]: .pubignore added to exclude build/ and doc/ — reduced package from 13 MB to 13 KB
+- [Phase 04-polish-and-publishing]: platforms: key moved to top-level in pubspec.yaml (was incorrectly nested under flutter:)
 
 ### Pending Todos
 
@@ -93,6 +97,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:20:46.368Z
-Stopped at: Completed 04-polish-and-publishing 04-01-PLAN.md
+Last session: 2026-03-15T18:24:33.220Z
+Stopped at: Completed 04-polish-and-publishing 04-02-PLAN.md
 Resume file: None
