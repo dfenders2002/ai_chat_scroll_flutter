@@ -32,6 +32,21 @@ import 'filler_sliver.dart';
 /// [ScrollConfiguration] so that platform-appropriate physics (bouncing on iOS,
 /// clamping on Android) are applied automatically.
 ///
+/// ## Keyboard awareness
+///
+/// During an active anchor, this widget automatically compensates for soft
+/// keyboard open/close events. When the viewport dimension changes (e.g. the
+/// soft keyboard opens and shrinks the visible area), the filler sliver is
+/// recomputed by the exact viewport delta so the anchored message remains at
+/// the top of the visible area. When the keyboard closes and the viewport grows,
+/// the filler is expanded by the same delta.
+///
+/// Outside of anchor mode, keyboard events are handled by Flutter's normal
+/// scroll behavior — this widget does not interfere.
+///
+/// Filler height is always clamped to 0.0 and never goes negative, ensuring
+/// correctness even when the AI response already exceeds the visible area.
+///
 /// ## Example
 ///
 /// ```dart
