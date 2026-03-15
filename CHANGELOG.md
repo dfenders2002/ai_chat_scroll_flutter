@@ -1,6 +1,9 @@
-## 0.1.0 - Unreleased
+## 0.1.0
 
-- Initial controller foundation
 - `AiChatScrollController` with `onUserMessageSent()` and `onResponseComplete()` lifecycle methods
-- `AiChatScrollView` stub widget with correct attach/detach lifecycle
+- `AiChatScrollView` widget with `itemBuilder`/`itemCount` builder API
+- Top-anchor-on-send: user's message snaps to viewport top when sent
+- Streaming filler: dynamic space below AI response keeps anchor stable during streaming
+- User drag cancellation: dragging during streaming cancels managed scroll
 - Zero runtime dependencies (Flutter SDK only)
+- Supports iOS (bouncing) and Android (clamping) scroll physics via ambient ScrollConfiguration

@@ -12,6 +12,11 @@ topics:
   - scroll
   - ai
 
+flutter:
+  platforms:
+    android:
+    ios:
+
 dependencies:
   flutter:
     sdk: flutter
