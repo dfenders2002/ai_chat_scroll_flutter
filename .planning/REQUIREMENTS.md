@@ -33,7 +33,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Enhancements
 
 - [x] **ENHN-01**: Scroll-to-bottom FAB/indicator appears when user has scrolled away from the latest messages
-- [ ] **ENHN-02**: Keyboard-aware scroll compensation — anchor position adjusts when soft keyboard opens/closes
+- [x] **ENHN-02**: Keyboard-aware scroll compensation — anchor position adjusts when soft keyboard opens/closes
 
 ### Package Quality
 
@@ -96,7 +96,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUAL-03 | Phase 4 | Complete |
 | QUAL-05 | Phase 4 | Complete |
 | ENHN-01 | Phase 5 | Complete |
-| ENHN-02 | Phase 5 | Pending |
+| ENHN-02 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 21 total

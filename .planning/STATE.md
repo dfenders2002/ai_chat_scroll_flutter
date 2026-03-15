@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 05-v1x-enhancements 05-01-PLAN.md
-last_updated: "2026-03-15T18:35:55.129Z"
+stopped_at: Completed 05-v1x-enhancements 05-02-PLAN.md
+last_updated: "2026-03-15T18:42:35.468Z"
 last_activity: 2026-03-15 — Phase 4 Plan 01 executed
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
   percent: 83
 ---
 
@@ -58,6 +58,7 @@ Progress: [████████░░] 83%
 | Phase 04-polish-and-publishing P01 | 2 | 2 tasks | 5 files |
 | Phase 04-polish-and-publishing P02 | 2 | 2 tasks | 3 files |
 | Phase 05-v1x-enhancements P01 | 3 | 2 tasks | 3 files |
+| Phase 05-v1x-enhancements P02 | 4 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,8 @@ Recent decisions affecting current work:
 - [Phase 04-polish-and-publishing]: .pubignore added to exclude build/ and doc/ — reduced package from 13 MB to 13 KB
 - [Phase 04-polish-and-publishing]: platforms: key moved to top-level in pubspec.yaml (was incorrectly nested under flutter:)
 - [Phase 05-v1x-enhancements]: isAtBottom is signal-only ValueListenable — no built-in FAB widget shipped; atBottomThreshold on controller not widget
+- [Phase 05-v1x-enhancements]: viewportDimension delta math: filler += delta keeps maxScrollExtent invariant — keyboard open/close preserves anchor position without moving scroll pixels
+- [Phase 05-v1x-enhancements]: TDD test assertions check visual position (item Y=0) not maxScrollExtent — maxScrollExtent is invariant under keyboard compensation, only Y position distinguishes correct vs incorrect behavior
 
 ### Pending Todos
 
@@ -99,6 +102,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:35:55.127Z
-Stopped at: Completed 05-v1x-enhancements 05-01-PLAN.md
+Last session: 2026-03-15T18:42:28.653Z
+Stopped at: Completed 05-v1x-enhancements 05-02-PLAN.md
 Resume file: None

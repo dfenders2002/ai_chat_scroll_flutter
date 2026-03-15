@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Sliver Composition** - AiChatScrollView with CustomScrollView, SliverList, and isolated FillerSliver (completed 2026-03-15)
 - [x] **Phase 3: Streaming Anchor Behavior** - Dynamic filler recomputation, suppressed auto-scroll, and manual scroll resume (completed 2026-03-15)
 - [x] **Phase 4: Polish and Publishing** - Edge cases, example app, dartdoc, and pub.dev readiness (completed 2026-03-15)
-- [ ] **Phase 5: v1.x Enhancements** - Scroll-to-bottom indicator and keyboard-aware compensation
+- [x] **Phase 5: v1.x Enhancements** - Scroll-to-bottom indicator and keyboard-aware compensation (completed 2026-03-15)
 
 ## Phase Details
 
@@ -85,7 +85,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. When the user has scrolled away from the latest messages, controller.isAtBottom reports false and scrollToBottom() returns to latest — devs build their own FAB using this signal
   2. When the soft keyboard opens or closes, the anchor position adjusts so the user's sent message remains visible at the top of the visible area (not obscured by the keyboard)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 05-01-PLAN.md — Scroll-to-bottom indicator API (isAtBottom ValueListenable + scrollToBottom method)
 - [ ] 05-02-PLAN.md — Keyboard-aware anchor compensation via viewportDimension change detection
@@ -101,4 +101,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Sliver Composition | 1/1 | Complete | 2026-03-15 |
 | 3. Streaming Anchor Behavior | 2/2 | Complete   | 2026-03-15 |
 | 4. Polish and Publishing | 2/2 | Complete   | 2026-03-15 |
-| 5. v1.x Enhancements | 1/2 | In Progress|  |
+| 5. v1.x Enhancements | 2/2 | Complete   | 2026-03-15 |
