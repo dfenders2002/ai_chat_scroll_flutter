@@ -38,19 +38,20 @@ created: 2026-03-15
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 3-01-01 | 01 | 1 | ANCH-01, ANCH-06 | widget | `flutter test test/anchor_behavior_test.dart` | ❌ W0 | ⬜ pending |
-| 3-01-02 | 01 | 1 | ANCH-02, ANCH-03, ANCH-04 | widget | `flutter test test/streaming_filler_test.dart` | ❌ W0 | ⬜ pending |
-| 3-01-03 | 01 | 1 | ANCH-05, API-04 | widget | `flutter test test/manual_scroll_test.dart` | ❌ W0 | ⬜ pending |
+| 3-01-01 | 01 | 1 | ANCH-01, ANCH-06 | widget | `flutter test test/anchor_behavior_test.dart` | No W0 | pending |
+| 3-01-02 | 01 | 1 | ANCH-02, ANCH-03, ANCH-04, ANCH-05 | widget | `flutter test test/streaming_filler_test.dart` | No W0 | pending |
+| 3-02-01 | 02 | 2 | API-04 | widget | `flutter test test/manual_scroll_test.dart` | No W0 | pending |
+| 3-02-02 | 02 | 2 | API-04 | widget | `flutter test test/manual_scroll_test.dart` | No W0 | pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: pending / green / red / flaky*
 
 ---
 
 ## Wave 0 Requirements
 
 - [ ] `test/anchor_behavior_test.dart` — stubs for ANCH-01, ANCH-06
-- [ ] `test/streaming_filler_test.dart` — stubs for ANCH-02, ANCH-03, ANCH-04
-- [ ] `test/manual_scroll_test.dart` — stubs for ANCH-05, API-04
+- [ ] `test/streaming_filler_test.dart` — stubs for ANCH-02, ANCH-03, ANCH-04, ANCH-05
+- [ ] `test/manual_scroll_test.dart` — stubs for API-04
 
 ---
 
