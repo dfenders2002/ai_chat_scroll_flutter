@@ -12,7 +12,7 @@ Build and publish a Flutter pub.dev package that implements the top-anchor-on-se
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Controller Foundation** - AiChatScrollController with lifecycle hooks, attach/detach delegation, and package scaffold
+- [x] **Phase 1: Controller Foundation** - AiChatScrollController with lifecycle hooks, attach/detach delegation, and package scaffold (completed 2026-03-15)
 - [ ] **Phase 2: Sliver Composition** - AiChatScrollView with CustomScrollView, SliverList, and isolated FillerSliver
 - [ ] **Phase 3: Streaming Anchor Behavior** - Dynamic filler recomputation, suppressed auto-scroll, and manual scroll resume
 - [ ] **Phase 4: Polish and Publishing** - Edge cases, example app, dartdoc, and pub.dev readiness
@@ -29,7 +29,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. The controller attaches and detaches from its internal ScrollController correctly — no memory leaks on dispose
   3. The package builds with zero runtime dependencies (Flutter SDK only) and passes dart analyze with no warnings
   4. The barrel export (lib/ai_chat_scroll.dart) exposes only AiChatScrollController and AiChatScrollView publicly
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [ ] 01-01-PLAN.md — Package scaffold, controller, widget stub, barrel export, and unit tests
 
@@ -86,7 +86,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Controller Foundation | 0/1 | Planning complete | - |
+| 1. Controller Foundation | 1/1 | Complete   | 2026-03-15 |
 | 2. Sliver Composition | 0/? | Not started | - |
 | 3. Streaming Anchor Behavior | 0/? | Not started | - |
 | 4. Polish and Publishing | 0/? | Not started | - |
