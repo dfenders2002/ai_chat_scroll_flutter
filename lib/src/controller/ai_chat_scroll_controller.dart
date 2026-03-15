@@ -32,6 +32,16 @@ import 'package:flutter/widgets.dart';
 class AiChatScrollController extends ChangeNotifier {
   ScrollController? _scrollController;
 
+  /// Whether an AI response is currently streaming.
+  ///
+  /// Set to `true` by [onUserMessageSent] and `false` by [onResponseComplete].
+  /// The [AiChatScrollView] listens to this via [addListener] to drive anchor
+  /// behavior and filler recomputation.
+  bool _streaming = false;
+
+  /// Whether an AI response is currently streaming.
+  bool get isStreaming => _streaming;
+
   /// Attaches this controller to the [ScrollController] owned by
   /// [AiChatScrollView]. Called automatically during widget initialization.
   ///
@@ -58,12 +68,16 @@ class AiChatScrollController extends ChangeNotifier {
   /// Call this after adding the user's message to your message list.
   /// Safe to call before the widget is mounted — no-ops gracefully.
   ///
-  /// Also notifies listeners, allowing the widget tree to react to the
-  /// message-sent event.
+  /// Sets [isStreaming] to `true` and notifies listeners, allowing the widget
+  /// tree to react by scheduling an anchor jump and setting up filler
+  /// recomputation.
   void onUserMessageSent() {
+    _streaming = true;
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (_scrollController == null || !_scrollController!.hasClients) return;
-      // Phase 3 will implement the anchor jump here.
+      // The actual anchor jump is performed by the widget state via its
+      // listener. The postFrameCallback guard here is retained from Phase 1
+      // to ensure scroll commands are safe to dispatch.
     });
     notifyListeners();
   }
@@ -73,10 +87,10 @@ class AiChatScrollController extends ChangeNotifier {
   /// After this call, the package stops maintaining the anchor position
   /// and the user can scroll freely.
   ///
-  /// Also notifies listeners, allowing the widget tree to react to the
-  /// response-complete event.
+  /// Sets [isStreaming] to `false` and notifies listeners, allowing the widget
+  /// tree to clear anchor state.
   void onResponseComplete() {
-    // Phase 3 will clear streaming state here.
+    _streaming = false;
     notifyListeners();
   }
 

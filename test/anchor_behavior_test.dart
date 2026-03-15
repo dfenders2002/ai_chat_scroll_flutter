@@ -18,6 +18,22 @@ Widget buildTestWidget({
   );
 }
 
+/// Pumps enough frames to let all postFrameCallbacks in the anchor pipeline
+/// fire. The anchor uses a 3-phase postFrameCallback chain, so we pump
+/// several frames.
+Future<void> pumpAnchor(WidgetTester tester) async {
+  // Phase 0: setState rebuild
+  await tester.pump();
+  // Phase 1: first postFrameCallback — scrolls to bottom
+  await tester.pump();
+  // Phase 2: second postFrameCallback — sets filler
+  await tester.pump();
+  // Phase 3: third postFrameCallback — jumps to target
+  await tester.pump();
+  // Settle any remaining frames
+  await tester.pumpAndSettle();
+}
+
 void main() {
   group('ANCH-01: After onUserMessageSent(), sent message top is at viewport top',
       () {
@@ -37,8 +53,7 @@ void main() {
 
       // Trigger anchor jump
       controller.onUserMessageSent();
-      await tester.pump();
-      await tester.pumpAndSettle();
+      await pumpAnchor(tester);
 
       // The last item (Msg 9) should now have its top at Y = 0.0
       final lastItemTopY = tester.getTopLeft(find.text('Msg 9')).dy;
@@ -86,8 +101,7 @@ void main() {
       await tester.pump();
 
       controller.onUserMessageSent();
-      await tester.pump();
-      await tester.pumpAndSettle();
+      await pumpAnchor(tester);
 
       // New last item (Msg 10) should be at viewport top
       final lastItemTopY = tester.getTopLeft(find.text('Msg 10')).dy;

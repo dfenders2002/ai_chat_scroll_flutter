@@ -18,18 +18,29 @@ Widget buildTestWidget({
   );
 }
 
+/// Pumps enough frames to let all postFrameCallbacks in the anchor pipeline
+/// fire. The anchor uses a 3-phase postFrameCallback chain, so we pump
+/// several frames.
+Future<void> pumpAnchor(WidgetTester tester) async {
+  // Phase 0: setState rebuild (so GlobalKey is applied)
+  await tester.pump();
+  // Phase 1: first postFrameCallback — scrolls to bottom
+  await tester.pump();
+  // Phase 2: second postFrameCallback — sets filler
+  await tester.pump();
+  // Phase 3: third postFrameCallback — jumps to target
+  await tester.pump();
+  // Settle any remaining frames
+  await tester.pumpAndSettle();
+}
+
 /// Reads the current FillerSliver SizedBox height from the widget tree.
+/// Finds the SizedBox inside the ValueListenableBuilder (filler) by
+/// locating the one that has no Text child.
 double readFillerHeight(WidgetTester tester) {
-  // The FillerSliver renders: ValueListenableBuilder -> SizedBox
-  // We find the SizedBox children of ValueListenableBuilder by type.
-  // The filler SizedBox is the one inside the SliverToBoxAdapter.
   final sizedBoxes = tester.widgetList<SizedBox>(find.byType(SizedBox)).toList();
-  // The filler SizedBox is the last one (after message SizedBoxes).
-  // It is the one that is inside the ValueListenableBuilder.
-  // We look for one that does NOT have a Text child (message SizedBoxes do).
   for (final box in sizedBoxes) {
     final element = tester.element(find.byWidget(box));
-    // Count descendants that are Text widgets
     int textCount = 0;
     void countText(Element el) {
       if (el.widget is Text) textCount++;
@@ -62,8 +73,7 @@ void main() {
 
       // Anchor on last item (Msg 9)
       controller.onUserMessageSent();
-      await tester.pump();
-      await tester.pumpAndSettle();
+      await pumpAnchor(tester);
 
       final anchoredY = tester.getTopLeft(find.text('Msg 9')).dy;
       expect(anchoredY, closeTo(0.0, 1.0),
@@ -104,8 +114,7 @@ void main() {
 
       // Anchor: the last item (100px) at top, filler = 600 - 100 = 500px
       controller.onUserMessageSent();
-      await tester.pump();
-      await tester.pumpAndSettle();
+      await pumpAnchor(tester);
 
       final fillerBefore = readFillerHeight(tester);
       expect(fillerBefore, greaterThan(0.0),
@@ -147,8 +156,7 @@ void main() {
 
       // Anchor
       controller.onUserMessageSent();
-      await tester.pump();
-      await tester.pumpAndSettle();
+      await pumpAnchor(tester);
 
       final pixelsBefore = scrollController.position.pixels;
       expect(pixelsBefore, greaterThan(0.0),
@@ -187,8 +195,7 @@ void main() {
 
       // Anchor on the single message
       controller.onUserMessageSent();
-      await tester.pump();
-      await tester.pumpAndSettle();
+      await pumpAnchor(tester);
 
       final fillerInitial = readFillerHeight(tester);
       expect(fillerInitial, closeTo(500.0, 1.0),
