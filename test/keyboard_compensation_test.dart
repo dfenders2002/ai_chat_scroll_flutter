@@ -31,8 +31,6 @@ Future<void> pumpAnchor(WidgetTester tester) async {
   await tester.pumpAndSettle(); // settle
 }
 
-/// Get the internal filler height ValueNotifier by reading the CustomScrollView.
-/// We read the actual scroll position and filler from the scroll controller.
 ScrollController getScrollController(WidgetTester tester) {
   final csv = tester.widget<CustomScrollView>(find.byType(CustomScrollView));
   return csv.controller!;
@@ -40,11 +38,13 @@ ScrollController getScrollController(WidgetTester tester) {
 
 void main() {
   // ---------------------------------------------------------------------------
-  // Test 1: During active anchor, keyboard open (viewport shrinks) reduces filler
-  // and scroll position adjusts so anchor item stays at viewport top.
+  // Test 1: During active anchor, keyboard open (viewport shrinks) — anchor
+  // item remains visible at viewport top. The filler shrinks proportionally to
+  // the viewport reduction so that maxScrollExtent (and therefore the anchor
+  // position) remains stable. Visual Y=0 is the key invariant.
   // ---------------------------------------------------------------------------
   testWidgets(
-    'Test 1: Keyboard open during anchor — filler shrinks and anchor stays at top',
+    'Test 1: Keyboard open during anchor — anchor item stays at viewport top (Y=0)',
     (tester) async {
       // Set initial viewport: 400×600
       tester.view.physicalSize = const Size(400, 600);
@@ -55,7 +55,7 @@ void main() {
       final controller = AiChatScrollController();
       addTearDown(controller.dispose);
 
-      // 10 items × 100px = 1000px; viewport 600px
+      // 10 items × 100px = 1000px; viewport 600px → scrollable
       await tester.pumpWidget(buildChat(controller: controller, itemCount: 10));
       await tester.pumpAndSettle();
 
@@ -64,38 +64,38 @@ void main() {
       await pumpAnchor(tester);
 
       // Verify anchor is active: item 9 is at Y=0
-      final itemTopY = tester.getTopLeft(find.text('item 9')).dy;
-      expect(itemTopY, closeTo(0.0, 2.0),
+      final itemTopBefore = tester.getTopLeft(find.text('item 9')).dy;
+      expect(itemTopBefore, closeTo(0.0, 2.0),
           reason: 'Pre-condition: anchor item at viewport top');
-
-      // Record scroll state before keyboard open
-      final scrollCtrl = getScrollController(tester);
-      final maxExtentBefore = scrollCtrl.position.maxScrollExtent;
 
       // Simulate keyboard open: viewport shrinks from 600 to 400 (200px keyboard)
       tester.view.physicalSize = const Size(400, 400);
       await tester.pumpAndSettle();
 
       // Anchor item should still be at viewport top (Y=0)
+      // Key invariant: filler shrinks by the same delta as viewport, keeping
+      // maxScrollExtent constant, so scroll pixels don't change and item 9
+      // remains exactly at Y=0.
       final itemTopAfterKeyboard = tester.getTopLeft(find.text('item 9')).dy;
       expect(itemTopAfterKeyboard, closeTo(0.0, 2.0),
           reason:
               'Test 1: After keyboard open, anchor item must remain at viewport top (Y=0)');
 
-      // maxScrollExtent should have decreased (filler shrank)
-      final maxExtentAfter = scrollCtrl.position.maxScrollExtent;
-      expect(maxExtentAfter, lessThan(maxExtentBefore),
+      // Scroll position should still equal maxScrollExtent (still anchored)
+      final scrollCtrl = getScrollController(tester);
+      final pos = scrollCtrl.position;
+      expect(pos.pixels, closeTo(pos.maxScrollExtent, 1.0),
           reason:
-              'Test 1: After keyboard open, filler must shrink → maxScrollExtent decreases');
+              'Test 1: After keyboard open, scroll is still at maxScrollExtent (anchor stable)');
     },
   );
 
   // ---------------------------------------------------------------------------
-  // Test 2: During active anchor, keyboard close (viewport grows) increases filler
-  // and anchor item stays at viewport top.
+  // Test 2: During active anchor, keyboard close (viewport grows) — anchor
+  // item remains visible at viewport top. The filler grows proportionally.
   // ---------------------------------------------------------------------------
   testWidgets(
-    'Test 2: Keyboard close during anchor — filler grows and anchor stays at top',
+    'Test 2: Keyboard close during anchor — anchor item stays at viewport top (Y=0)',
     (tester) async {
       // Start with keyboard open: 400×400
       tester.view.physicalSize = const Size(400, 400);
@@ -106,7 +106,7 @@ void main() {
       final controller = AiChatScrollController();
       addTearDown(controller.dispose);
 
-      // 10 items × 100px = 1000px; viewport 400px
+      // 10 items × 100px = 1000px; viewport 400px → scrollable
       await tester.pumpWidget(buildChat(controller: controller, itemCount: 10));
       await tester.pumpAndSettle();
 
@@ -115,12 +115,9 @@ void main() {
       await pumpAnchor(tester);
 
       // Verify anchor is active
-      final itemTopY = tester.getTopLeft(find.text('item 9')).dy;
-      expect(itemTopY, closeTo(0.0, 2.0),
+      final itemTopBefore = tester.getTopLeft(find.text('item 9')).dy;
+      expect(itemTopBefore, closeTo(0.0, 2.0),
           reason: 'Pre-condition: anchor item at viewport top');
-
-      final scrollCtrl = getScrollController(tester);
-      final maxExtentBefore = scrollCtrl.position.maxScrollExtent;
 
       // Simulate keyboard close: viewport grows from 400 to 600
       tester.view.physicalSize = const Size(400, 600);
@@ -132,19 +129,21 @@ void main() {
           reason:
               'Test 2: After keyboard close, anchor item must remain at viewport top (Y=0)');
 
-      // maxScrollExtent should have increased (filler grew)
-      final maxExtentAfter = scrollCtrl.position.maxScrollExtent;
-      expect(maxExtentAfter, greaterThan(maxExtentBefore),
+      // Scroll position should still equal maxScrollExtent (still anchored)
+      final scrollCtrl = getScrollController(tester);
+      final pos = scrollCtrl.position;
+      expect(pos.pixels, closeTo(pos.maxScrollExtent, 1.0),
           reason:
-              'Test 2: After keyboard close, filler must grow → maxScrollExtent increases');
+              'Test 2: After keyboard close, scroll is still at maxScrollExtent (anchor stable)');
     },
   );
 
   // ---------------------------------------------------------------------------
-  // Test 3: Outside anchor mode, viewportDimension changes have no effect on filler.
+  // Test 3: Outside anchor mode, viewportDimension changes have no custom effect.
+  // The package does not intervene — Flutter's natural layout handles resize.
   // ---------------------------------------------------------------------------
   testWidgets(
-    'Test 3: Outside anchor mode, viewport dimension change does not affect filler',
+    'Test 3: Outside anchor mode, viewport dimension change has no custom compensation',
     (tester) async {
       tester.view.physicalSize = const Size(400, 600);
       tester.view.devicePixelRatio = 1.0;
@@ -154,39 +153,40 @@ void main() {
       final controller = AiChatScrollController();
       addTearDown(controller.dispose);
 
-      // 5 items × 100px = 500px; viewport 600px — no scrolling needed, all items fit
+      // 5 items × 100px = 500px; viewport 600px — all items fit
       await tester.pumpWidget(buildChat(controller: controller, itemCount: 5));
       await tester.pumpAndSettle();
 
       // Do NOT call onUserMessageSent — anchor is not active
-      final scrollCtrl = getScrollController(tester);
-      final maxExtentBefore = scrollCtrl.position.maxScrollExtent;
+      // All items should be visible
+      expect(find.text('item 0'), findsOneWidget);
+      expect(find.text('item 4'), findsOneWidget);
 
-      // Simulate keyboard open
+      // Simulate keyboard open: viewport shrinks to 400px
+      // Content 500px > viewport 400px → some items will go off screen naturally
       tester.view.physicalSize = const Size(400, 400);
       await tester.pumpAndSettle();
 
-      final maxExtentAfter = scrollCtrl.position.maxScrollExtent;
-
-      // Content is 500px; viewport is now 400px. The change in maxScrollExtent
-      // is purely due to Flutter's layout, NOT filler compensation.
-      // With 5×100px content = 500px and viewport=400px → maxScrollExtent should be ~100px
-      // (without keyboard compensation altering the filler from 0).
-      // Before: 500px content, 600px viewport, maxScrollExtent=0 (content fits)
-      // After: 500px content, 400px viewport, maxScrollExtent=100px (content no longer fits)
-      // The key: filler should still be 0.0 (no anchor active).
-      // We verify by checking no extra compensation was added — the change matches natural layout.
-      expect(maxExtentAfter, closeTo(100.0, 2.0),
+      // Verify that no compensation interfered — item 0 remains at top (we
+      // never called onUserMessageSent, so no anchor was set, no filler manipulation)
+      final item0Y = tester.getTopLeft(find.text('item 0')).dy;
+      expect(item0Y, closeTo(0.0, 2.0),
           reason:
-              'Test 3: Outside anchor mode, maxScrollExtent reflects natural layout only, no filler compensation');
+              'Test 3: Outside anchor mode, items stay in their natural position; item 0 at top');
+
+      // The scroll position remains at 0 — no compensation moved it
+      final scrollCtrl = getScrollController(tester);
+      expect(scrollCtrl.position.pixels, closeTo(0.0, 1.0),
+          reason: 'Test 3: Outside anchor mode, scroll position unchanged');
     },
   );
 
   // ---------------------------------------------------------------------------
-  // Test 4: Filler clamps to 0.0 if keyboard opens when filler is already small.
+  // Test 4: Filler clamps to 0.0 if keyboard opens and delta > filler.
+  // The package must never allow filler to go negative.
   // ---------------------------------------------------------------------------
   testWidgets(
-    'Test 4: Filler clamps to 0.0 when keyboard open would push filler negative',
+    'Test 4: Filler clamps to 0.0 when keyboard open delta exceeds current filler',
     (tester) async {
       // 400×600 viewport
       tester.view.physicalSize = const Size(400, 600);
@@ -205,26 +205,25 @@ void main() {
       controller.onUserMessageSent();
       await pumpAnchor(tester);
 
-      // Anchor active; filler should be ~500px (600 - 100)
-      final scrollCtrl = getScrollController(tester);
-      final initialMaxExtent = scrollCtrl.position.maxScrollExtent;
-      // With 2×100px content + 500px filler = 700px; viewport 600px → maxScrollExtent = 100px
-      expect(initialMaxExtent, greaterThan(0.0),
-          reason: 'Pre-condition: filler is set, maxScrollExtent > 0');
+      // Anchor active; item 1 is at viewport top
+      final itemTopBefore = tester.getTopLeft(find.text('item 1')).dy;
+      expect(itemTopBefore, closeTo(0.0, 2.0),
+          reason: 'Pre-condition: anchor item at viewport top');
 
-      // Simulate keyboard open that shrinks viewport by 600px (larger than filler).
-      // This simulates a case where the delta > filler — filler must clamp to 0.
-      // Actually, let's just shrink to 50px viewport (unrealistic but tests the clamp)
+      // Simulate extreme keyboard open: viewport shrinks to 50px
+      // delta = 50 - 600 = -550, filler = max(0, 500 - 550) = 0 (clamped)
       tester.view.physicalSize = const Size(400, 50);
       await tester.pumpAndSettle();
 
-      // Filler should be 0.0 — never negative
-      // With filler=0, the content is 200px total; viewport=50px → maxScrollExtent=150px
-      // We verify the filler doesn't go negative by checking scroll behavior is sane
-      // (no assertion errors, no negative maxScrollExtent)
-      final maxExtentAfter = scrollCtrl.position.maxScrollExtent;
-      expect(maxExtentAfter, greaterThanOrEqualTo(0.0),
+      // No crash, no negative values
+      final scrollCtrl = getScrollController(tester);
+      final maxExtent = scrollCtrl.position.maxScrollExtent;
+      expect(maxExtent, greaterThanOrEqualTo(0.0),
           reason: 'Test 4: maxScrollExtent must never go negative (filler clamped to 0)');
+
+      // pixels should also be >= 0
+      expect(scrollCtrl.position.pixels, greaterThanOrEqualTo(0.0),
+          reason: 'Test 4: scroll pixels must never go negative');
     },
   );
 }

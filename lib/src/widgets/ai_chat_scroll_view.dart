@@ -78,6 +78,9 @@ class _AiChatScrollViewState extends State<AiChatScrollView> {
   bool _fillerUpdateScheduled = false;
   final GlobalKey _anchorKey = GlobalKey();
 
+  // Keyboard compensation state
+  double _lastViewportDimension = 0.0;
+
   @override
   void initState() {
     super.initState();
@@ -229,6 +232,7 @@ class _AiChatScrollViewState extends State<AiChatScrollView> {
     _anchorActive = true;
     _scrollController.jumpTo(target);
     _lastMaxScrollExtent = _scrollController.position.maxScrollExtent;
+    _lastViewportDimension = _scrollController.position.viewportDimension;
   }
 
   // ——— Filler recomputation ————————————————————————————————————————————————
@@ -254,11 +258,40 @@ class _AiChatScrollViewState extends State<AiChatScrollView> {
   void _recomputeFiller() {
     if (!_anchorActive || !_scrollController.hasClients) return;
     final pos = _scrollController.position;
+    _lastViewportDimension = pos.viewportDimension; // keep current for keyboard detection
     final growth = pos.maxScrollExtent - _lastMaxScrollExtent;
     if (growth > 0) {
       _fillerHeight.value = math.max(0.0, _fillerHeight.value - growth);
       _lastMaxScrollExtent = pos.maxScrollExtent;
     }
+  }
+
+  // ——— Keyboard compensation ———————————————————————————————————————————————
+
+  /// Called when [ScrollMetricsNotification] reports a new [viewportDimension]
+  /// while the anchor is active. Adjusts the filler by the delta so the anchored
+  /// message remains at the top of the visible area.
+  ///
+  /// - delta < 0: viewport shrank (soft keyboard opened) → filler shrinks.
+  /// - delta > 0: viewport grew (soft keyboard closed) → filler grows.
+  ///
+  /// Filler is clamped to 0.0 to prevent negative values when the response
+  /// already exceeds the visible area.
+  void _onViewportDimensionChanged(double newViewportDimension) {
+    final delta = newViewportDimension - _lastViewportDimension;
+    _lastViewportDimension = newViewportDimension;
+
+    // delta > 0 means viewport grew (keyboard closed) -> filler grows
+    // delta < 0 means viewport shrank (keyboard opened) -> filler shrinks
+    _fillerHeight.value = math.max(0.0, _fillerHeight.value + delta);
+
+    // After filler change, re-anchor to keep sent message at viewport top.
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      final pos = _scrollController.position;
+      _scrollController.jumpTo(pos.maxScrollExtent);
+      _lastMaxScrollExtent = pos.maxScrollExtent;
+    });
   }
 
   // ——— Build ——————————————————————————————————————————————————————————————
@@ -274,6 +307,12 @@ class _AiChatScrollViewState extends State<AiChatScrollView> {
       },
       child: NotificationListener<ScrollMetricsNotification>(
         onNotification: (notification) {
+          final currentVD = notification.metrics.viewportDimension;
+          if (_anchorActive &&
+              _lastViewportDimension > 0.0 &&
+              currentVD != _lastViewportDimension) {
+            _onViewportDimensionChanged(currentVD);
+          }
           _onScrollChanged();
           return false;
         },
