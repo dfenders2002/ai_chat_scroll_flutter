@@ -79,13 +79,16 @@ Plans:
 - [ ] 04-02-PLAN.md — Example app with streaming simulation and final pub.dev verification
 
 ### Phase 5: v1.x Enhancements
-**Goal**: Post-launch enhancements that improve UX for common scenarios — scroll-to-bottom indicator and keyboard-aware anchor compensation
+**Goal**: Post-launch enhancements that improve UX for common scenarios — scroll-to-bottom indicator API and keyboard-aware anchor compensation
 **Depends on**: Phase 4
 **Requirements**: ENHN-01, ENHN-02
 **Success Criteria** (what must be TRUE):
-  1. When the user has scrolled away from the latest messages, a scroll-to-bottom button or indicator appears and tapping it returns the user to the latest message
+  1. When the user has scrolled away from the latest messages, controller.isAtBottom reports false and scrollToBottom() returns to latest — devs build their own FAB using this signal
   2. When the soft keyboard opens or closes, the anchor position adjusts so the user's sent message remains visible at the top of the visible area (not obscured by the keyboard)
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 05-01-PLAN.md — Scroll-to-bottom indicator API (isAtBottom ValueListenable + scrollToBottom method)
+- [ ] 05-02-PLAN.md — Keyboard-aware anchor compensation via viewportDimension change detection
 
 ## Progress
 
@@ -98,4 +101,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Sliver Composition | 1/1 | Complete | 2026-03-15 |
 | 3. Streaming Anchor Behavior | 2/2 | Complete   | 2026-03-15 |
 | 4. Polish and Publishing | 2/2 | Complete   | 2026-03-15 |
-| 5. v1.x Enhancements | 0/? | Not started | - |
+| 5. v1.x Enhancements | 0/2 | Not started | - |
