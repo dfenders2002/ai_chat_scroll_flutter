@@ -58,7 +58,10 @@ Plans:
   4. If the AI response grows longer than the viewport, the user can manually scroll down to read the rest and the package does not re-hijack scroll position
   5. When the user has scrolled up to read old messages and then sends a new message, the viewport resets and the new message anchors at the top
   6. A user drag during a managed scroll immediately cancels that scroll — the package does not resume control until onUserMessageSent() is called again
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 03-01-PLAN.md — Anchor jump, streaming filler recomputation, and controller state (ANCH-01 through ANCH-06)
+- [ ] 03-02-PLAN.md — User drag cancellation via NotificationListener (API-04)
 
 ### Phase 4: Polish and Publishing
 **Goal**: The package handles all edge cases correctly, has a working example app, full dartdoc coverage, and passes pub.dev quality checks
@@ -90,6 +93,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Controller Foundation | 1/1 | Complete   | 2026-03-15 |
 | 2. Sliver Composition | 0/1 | In progress | - |
-| 3. Streaming Anchor Behavior | 0/? | Not started | - |
+| 3. Streaming Anchor Behavior | 0/2 | Not started | - |
 | 4. Polish and Publishing | 0/? | Not started | - |
 | 5. v1.x Enhancements | 0/? | Not started | - |
