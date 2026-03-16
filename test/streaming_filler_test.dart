@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ai_chat_scroll/ai_chat_scroll.dart';
 
 /// Helper: build AiChatScrollView inside a MaterialApp with a fixed
-/// 400x600 viewport. [itemCount] items, each 100px tall.
+/// 400x600 viewport. [itemCount] items, each 100px tall with a text child.
 Widget buildTestWidget({
   required AiChatScrollController controller,
   required int itemCount,
@@ -12,8 +12,7 @@ Widget buildTestWidget({
     home: AiChatScrollView(
       controller: controller,
       itemCount: itemCount,
-      itemBuilder: (_, index) =>
-          SizedBox(height: 100, child: Text('Msg $index')),
+      itemBuilder: (_, index) => SizedBox(height: 100, child: Text('Msg $index')),
     ),
   );
 }
@@ -46,6 +45,7 @@ double readFillerHeight(WidgetTester tester) {
       if (el.widget is Text) textCount++;
       el.visitChildren(countText);
     }
+
     element.visitChildren((child) => countText(child));
     if (textCount == 0) {
       return box.height ?? 0.0;
@@ -56,8 +56,7 @@ double readFillerHeight(WidgetTester tester) {
 
 void main() {
   group('ANCH-02: Anchored message stays at viewport top as items are added', () {
-    testWidgets('last item Y unchanged when new item added during streaming',
-        (tester) async {
+    testWidgets('last item Y unchanged when new item added during streaming', (tester) async {
       await tester.binding.setSurfaceSize(const Size(400, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -76,8 +75,7 @@ void main() {
       await pumpAnchor(tester);
 
       final anchoredY = tester.getTopLeft(find.text('Msg 9')).dy;
-      expect(anchoredY, closeTo(0.0, 1.0),
-          reason: 'Pre-condition: anchor positioned at Y=0');
+      expect(anchoredY, closeTo(0.0, 1.0), reason: 'Pre-condition: anchor positioned at Y=0');
 
       // Add an item (simulating AI response growing / streaming)
       await tester.pumpWidget(buildTestWidget(
@@ -90,15 +88,12 @@ void main() {
       // Msg 9 should still be at Y=0 (anchor must hold)
       final anchoredYAfter = tester.getTopLeft(find.text('Msg 9')).dy;
       expect(anchoredYAfter, closeTo(0.0, 1.0),
-          reason:
-              'ANCH-02: Anchored message must stay at viewport top after adding items during streaming');
+          reason: 'ANCH-02: Anchored message must stay at viewport top after adding items during streaming');
     });
   });
 
-  group('ANCH-03: Filler height decreases as content is added during streaming',
-      () {
-    testWidgets('FillerSliver SizedBox height decreases after adding items',
-        (tester) async {
+  group('ANCH-03: Filler height decreases as content is added during streaming', () {
+    testWidgets('FillerSliver SizedBox height decreases after adding items', (tester) async {
       await tester.binding.setSurfaceSize(const Size(400, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -117,8 +112,7 @@ void main() {
       await pumpAnchor(tester);
 
       final fillerBefore = readFillerHeight(tester);
-      expect(fillerBefore, greaterThan(0.0),
-          reason: 'Pre-condition: filler must be > 0 after anchoring one message');
+      expect(fillerBefore, greaterThan(0.0), reason: 'Pre-condition: filler must be > 0 after anchoring one message');
 
       // Add another item (simulating AI response)
       await tester.pumpWidget(buildTestWidget(
@@ -130,13 +124,11 @@ void main() {
 
       final fillerAfter = readFillerHeight(tester);
       expect(fillerAfter, lessThan(fillerBefore),
-          reason:
-              'ANCH-03: Filler height must decrease as streaming content is added below the anchor');
+          reason: 'ANCH-03: Filler height must decrease as streaming content is added below the anchor');
     });
   });
 
-  group('ANCH-04: Scroll position (pixels) does not change during streaming',
-      () {
+  group('ANCH-04: Scroll position (pixels) does not change during streaming', () {
     testWidgets('pixels unchanged when items added after anchor', (tester) async {
       await tester.binding.setSurfaceSize(const Size(400, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -150,17 +142,14 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      final scrollController = tester
-          .widget<CustomScrollView>(find.byType(CustomScrollView))
-          .controller!;
+      final scrollController = tester.widget<CustomScrollView>(find.byType(CustomScrollView)).controller!;
 
       // Anchor
       controller.onUserMessageSent();
       await pumpAnchor(tester);
 
       final pixelsBefore = scrollController.position.pixels;
-      expect(pixelsBefore, greaterThan(0.0),
-          reason: 'Pre-condition: scroll position should be > 0 after anchor');
+      expect(pixelsBefore, greaterThan(0.0), reason: 'Pre-condition: scroll position should be > 0 after anchor');
 
       // Add items (simulating streaming)
       await tester.pumpWidget(buildTestWidget(
@@ -172,14 +161,12 @@ void main() {
 
       final pixelsAfter = scrollController.position.pixels;
       expect(pixelsAfter, closeTo(pixelsBefore, 1.0),
-          reason:
-              'ANCH-04: Scroll pixels must not change during streaming — only filler shrinks');
+          reason: 'ANCH-04: Scroll pixels must not change during streaming — only filler shrinks');
     });
   });
 
   group('ANCH-05: Filler clamps to 0 when AI response exceeds viewport', () {
-    testWidgets('filler reaches 0 when enough items added to exceed viewport',
-        (tester) async {
+    testWidgets('filler reaches 0 when enough items added to exceed viewport', (tester) async {
       await tester.binding.setSurfaceSize(const Size(400, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -199,8 +186,7 @@ void main() {
 
       final fillerInitial = readFillerHeight(tester);
       expect(fillerInitial, closeTo(500.0, 1.0),
-          reason:
-              'Pre-condition: filler after anchoring 100px message in 600px viewport = 500px');
+          reason: 'Pre-condition: filler after anchoring 100px message in 600px viewport = 500px');
 
       // Add 6 more items (6 * 100px = 600px > remaining 500px filler)
       // This should bring filler down to 0
@@ -213,8 +199,7 @@ void main() {
 
       final fillerFinal = readFillerHeight(tester);
       expect(fillerFinal, closeTo(0.0, 1.0),
-          reason:
-              'ANCH-05: Filler must clamp to 0 when AI response content exceeds viewport height');
+          reason: 'ANCH-05: Filler must clamp to 0 when AI response content exceeds viewport height');
     });
   });
 }
