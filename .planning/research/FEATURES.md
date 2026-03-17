@@ -1,8 +1,8 @@
 # Feature Research
 
-**Domain:** Flutter scroll/viewport management package for AI chat
-**Researched:** 2026-03-15
-**Confidence:** MEDIUM-HIGH (ecosystem well-surveyed; Claude/ChatGPT internal implementation inferred from behavior observation and analogous React Native library)
+**Domain:** Flutter scroll/viewport management package for AI chat — v2.0 milestone (dual-layout, auto-follow, 5-state machine)
+**Researched:** 2026-03-17
+**Confidence:** MEDIUM-HIGH (ecosystem surveyed via react-native-streaming-message-list, assistant-ui, stream_chat_flutter, flutter_chat_ui, TanStack Virtual discussion, and direct behavioral analysis of ChatGPT/Claude scroll UX)
 
 ---
 
@@ -10,127 +10,144 @@
 
 ### Table Stakes (Users Expect These)
 
-Features that any developer picking up a chat scroll package expects to work. Missing these means the package is not usable as a drop-in solution.
+Features any developer picking up this package expects from a v2.0 AI-chat-optimized scroll package. Missing these makes the package feel incomplete or broken compared to what major AI chat apps deliver.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Reverse-list ordering (newest at bottom, older above) | Universal convention in chat apps — WhatsApp, iMessage, Telegram, every AI chat app | LOW | Flutter `ListView(reverse: true)` partially handles this but has known physics bugs; package must paper over them |
-| Scroll-to-bottom on new message (when already at bottom) | Standard chat behavior: if user is reading the current bottom, new message should stay in view | LOW | Requires detecting "is user at bottom?" threshold + programmatic jump/animate |
-| Preserve scroll position when user has scrolled up | Standard pattern: do not hijack user scroll when they are reading history | MEDIUM | Needs scroll position tracking + threshold logic (see `lorien_chat_list` `bottomEdgeThreshold`) |
-| "Scroll to bottom" FAB / indicator when behind in history | All major chat apps show a badge/button when messages arrive below view | MEDIUM | Must detect unread messages below current position; `stream_chat_flutter` and `flutter_chat_ui` both implement this |
-| Keyboard-aware scroll compensation | When soft keyboard opens, scroll must adjust so latest content stays visible | MEDIUM | Flutter `MediaQuery.viewInsets` provides inset data; must integrate with scroll physics |
-| No scroll jank during message insertion | Abrupt jumps when items are added are immediately visible and frustrating | MEDIUM | `scrollview_observer` addresses specifically: "prevents visual jitter during dynamic updates" |
-| Simple, obvious API surface | Devs expect a controller + widget pattern, not a full framework | LOW | PROJECT.md already mandates `AiChatScrollController` + `AiChatScrollView` — this aligns with ecosystem expectations |
-| Working on iOS and Android | These are the primary targets for Flutter chat apps | LOW | Must validate against both platform scroll physics (Cupertino bouncing vs. Android clamping) |
+| Auto-follow during streaming (when user is at bottom) | ChatGPT, Claude, Gemini all auto-follow streaming responses when the user has not scrolled away. Not following = user misses content being generated without realizing it. | MEDIUM | Only engage when user is in `idle_at_bottom` or `submitted_waiting_response` state. Must NOT engage when user has intentionally scrolled away. |
+| Scroll-detach when user manually scrolls up during streaming | All major AI apps immediately stop auto-following if the user drags up. Failure to stop = the worst scroll UX bug in any chat app; user fights the scroll to read older content. | MEDIUM | Detected via `UserScrollNotification` in Flutter. Once detached, must remain detached until explicit re-attach trigger (user scrolls back to bottom OR taps scroll-to-bottom button). |
+| Re-attach / resume auto-follow when user returns to bottom | After a user manually detaches and then scrolls back to the bottom, auto-follow resumes. ChatGPT confirms: "As long as you don't tap the bottom, autoscroll stays paused." Conversely, returning to bottom reactivates it. | MEDIUM | Re-attach threshold should be configurable but default to a small pixel offset (e.g., ≤20px from bottom). Must distinguish programmatic scroll (button tap) from user drag. |
+| Scroll-to-bottom FAB / button visible when detached | Every major chat app (Claude, ChatGPT, stream_chat_flutter, flutter_chat_ui v2, iMessage, Telegram) shows a visible affordance when the user is not at the bottom. This is now expected table stakes, not a differentiator. | MEDIUM | Must expose `isAtBottom` / `isDetached` on the controller so the consuming app can show/hide a FAB. Optionally expose `unreadTokenCount` or simpler boolean. |
+| Re-anchor from any scroll position on new send | If the user is browsing history and sends a new message, the viewport must snap to the active turn (top-anchor mode). Leaving the user looking at old history after sending = broken UX. | MEDIUM | This was a differentiator in v1.0 — it becomes table stakes in v2.0 because v1.0 ships it. |
+| No scroll jank during streaming height changes | The AI response grows on every streamed token. Each height change must not cause the scroll view to visually jump or stutter. | MEDIUM | Critical for `streaming_following` state. The filler space mechanism must absorb growth without scroll position changes. |
+| Keyboard-aware offset calculation in all states | Opening/closing the soft keyboard changes the visible viewport area. Anchor positions and filler heights must recalculate on every keyboard inset change. | MEDIUM | Already done in v1.0 for the top-anchor case. Must extend to the `rest` layout and `streaming_following` state. |
 
 ### Differentiators (Competitive Advantage)
 
-Features no current Flutter package provides cleanly. The core value proposition of this package lives here.
+Features that no current Flutter package provides. The v2.0 value proposition vs. v1.0 and all competitors lives here.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Top-anchor-on-send: user message snaps to top of viewport when sent | The defining behavior of Claude mobile. No Flutter package does this. `scrollview_observer` partially covers streaming preservation but not the snap-to-top-on-send trigger. | HIGH | Requires calculating target scroll offset such that the sent message sits flush at the top of the viewport, then jumping there atomically before AI response begins |
-| Dynamic filler space below streaming response | Keeps the anchor in place during streaming without scroll chasing. React Native equivalent (`react-native-streaming-message-list`) injects a dynamic blank spacer at the bottom. Flutter requires a `SliverFillRemaining` or equivalent to do this. | HIGH | Filler height = max(0, viewport_height - (user_message_height + ai_response_height_so_far)). Must recompute on every streaming token. |
-| No auto-scroll during AI streaming | User stays pinned at the user message; AI grows below. Current packages (e.g., `lorien_chat_list`) auto-scroll to the bottom on new content — the opposite of desired behavior. | MEDIUM | Streaming must be modeled as a content height change, not a new message insertion, to suppress auto-scroll logic |
-| Manual scroll resume to see long responses | If AI response exceeds viewport, user manually scrolls down without any interference from the package | LOW | Package must stop all scroll-management behavior the moment user drags; detect via `ScrollNotification` / `UserScrollNotification` |
-| New-message-while-scrolling-history: jump back to anchor | If user was reading old messages and sends a new one, the viewport resets to the top-anchor pattern | MEDIUM | Requires detecting send event while `scrollOffset > nearBottomThreshold` and executing the top-anchor positioning sequence |
-| Streamed response height tracking | Controller knows AI response height in real time, enabling filler space calculation and correct anchor positioning | MEDIUM | Requires a `GlobalKey` or `RenderBox` measurement callback on the AI message widget |
-| Controller lifecycle hooks: `onUserMessageSent()`, `onResponseComplete()` | Clean API for consuming apps to signal transitions; far better DX than requiring devs to manipulate scroll offsets directly | LOW | These are the seams between the consuming app's streaming logic and the scroll package |
+| Two layout modes: rest vs. active-turn | Rest = conversation history, newest message at bottom, bottom-aligned (standard chat). Active-turn = user message anchored near top, AI response grows below. Transitioning between them on send/complete is the v2.0 core behavior. No Flutter package models this as two distinct visual modes. | HIGH | Rest mode: `ListView(reverse: true)` physics. Active-turn mode: top-anchor + filler. Transition on `onUserMessageSent()` and back on `onResponseComplete()`. |
+| 5-state scroll machine with clean transitions | Formalizes the scroll lifecycle into: `idle_at_bottom` → `submitted_waiting_response` → `streaming_following` ↔ `streaming_detached` → `history_browsing`. Each state has clearly defined entry conditions, behavior, and exit triggers. No library (Flutter or React Native) exposes this model cleanly. | HIGH | State machine eliminates the class of bugs where scroll behavior depends on ad-hoc boolean flags. Each state is a named, testable entity. |
+| Smart down-button: jumps to active turn composition, not absolute bottom | During `streaming_detached`, the down-button should scroll to the user message + AI response start — the "active turn" — not to the growing bottom of the AI response. This mirrors Claude's mobile behavior and keeps the user oriented. | MEDIUM | Requires storing the scroll offset of the active-turn anchor when the turn starts. Button target = that stored offset, not `maxScrollExtent`. |
+| Content-bounded dynamic spacing | Filler space is computed from actual content heights so the viewport is never scrollable into empty space. In v1.0 the filler could leave empty scroll area below the AI response. In v2.0, filler = `max(0, viewport_height - content_above_filler)`, clamped so the list never overscrolls past content. | HIGH | Requires measuring total content height via `RenderBox` or `SliverConstraints`. Must recompute on every streaming token. |
+| Response completion transition: active-turn → rest layout | When `onResponseComplete()` fires, the scroll system transitions back to rest mode (bottom-aligned). This needs to happen without a jarring jump: the final AI message should appear to settle at the bottom of the history. | HIGH | Transition involves removing the filler, allowing the list to reflow to rest position. May require a brief animation or deferred reflow. |
+| `history_browsing` state: complete hands-off mode | When user has scrolled into history (past the active turn) and no streaming is happening, the package completely yields scroll control. No auto-jumps, no managed behavior. Package becomes a no-op until next `onUserMessageSent()`. | MEDIUM | Distinct from `streaming_detached` (which still has an active turn). This is full "user owns the scroll" mode. |
+| Exposed scroll state as controller property | `controller.scrollState` returns the current `AiChatScrollState` enum value. Consuming apps can react to state changes: show/hide FAB, update send button style, trigger animations. No current Flutter package exposes this. | LOW | Requires a `ValueNotifier<AiChatScrollState>` on the controller so widgets can listen without polling. |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Built-in message bubble UI | "Make it a full drop-in chat widget" — reduces integration code | Violates the single-responsibility principle; forces opinionated visual design on consumers; competitors (flutter_chat_ui, dash_chat_2) already own this space. This package's value is scroll logic, not UI. | Keep scope to scroll behavior; provide a clear example app showing how to combine with any message bubble widget |
-| Built-in streaming/AI integration | "Handle the API calls too" | Couples a pure UI concern (scroll) to networking and AI provider choice; would require depending on http/dio/openai SDK and tracking every API change | Expose controller hooks (`onUserMessageSent`, `onResponseComplete`) so consuming apps push events in; they own the streaming |
-| Infinite scroll / pagination of older messages | "Load more history at top" | Technically distinct problem from bottom-anchor streaming; adds significant complexity (prepend vs. append scroll math, loading indicators, cache management); `scrollview_observer` and Stream's lazy-load pattern cover this separately | Explicit v1 exclusion; document that consumers can layer pagination on top via standard `ScrollController` callbacks |
-| Desktop/web scroll support | "Support all platforms" | Scroll physics differ fundamentally: no momentum, mouse-wheel events, trackpad precision. The top-anchor pattern is a mobile UX pattern. Attempting desktop support without a real desktop design leads to poor UX on all platforms. | Explicitly document mobile-only in v1; revisit for v2 with platform-specific physics |
-| Auto-scroll-to-bottom during AI streaming | "Follow the response as it generates" | This is the anti-pattern this package exists to solve. Auto-following causes disorientation when the response is longer than the viewport. | The top-anchor model: user message stays visible, response grows below, user manually scrolls to read more |
-| Full message state management | "Also manage the message list" | Devs already have message state in their existing architecture (Provider, Riverpod, Bloc, etc.); forcing a new state layer causes integration friction | Receive only scroll-relevant signals (`onUserMessageSent`, `onResponseComplete`); let the consuming app own message data |
-| Configurable scroll physics | "Let users tune physics values" | Surface area explosion; each exposed parameter requires documentation, testing, and migration consideration. Premature optimization before real-world usage data. | Expose zero physics config in v1; add only if pub.dev issues request specific values |
+| Animated transitions between layout modes | "The snap from active-turn to rest feels abrupt" | Animation during reflow is extremely complex: the list must change anchor points while maintaining scroll continuity, and content height changes mid-animation cause visual artifacts. React Native's equivalent library deliberately skips this. | Ship instant transitions in v2.0. Mark as v2.1 candidate only after layout mode transitions are stable and real users report the abruptness as a pain point. |
+| Auto-follow that chases the absolute bottom of the streaming response | "Just keep scrolling down as it generates, like a terminal" | This is the anti-pattern the entire package exists to solve. Users lose context of their own question. The anchor model (user message near top) is demonstrably better for comprehension. | The `streaming_following` state keeps the viewport at the active-turn composition. Users see their question + the beginning of the answer — not the end of a long response. |
+| Unread message count badge on the down-button | "Show how many tokens/lines I've missed" | Token counts are not message counts. Streaming means the count changes every 50ms, causing badge flicker. Meaningful unread counts require message boundary awareness the package deliberately does not have. | Expose a boolean `isDetachedDuringStreaming` — consuming app decides its own badge UI. Do not attempt live counts. |
+| Configurable scroll physics (friction, deceleration) | "Let me tune the feel" | Every exposed parameter multiplies the testing matrix by the number of valid values × 2 platforms. Premature surface area before any user requests specific values. | Ship zero physics configuration in v2.0. Open a GitHub issue template for physics requests with required justification. |
+| Built-in support for "stop generation" button behavior | "When user taps stop, scroll should respond" | The package does not know about the AI generation lifecycle beyond the signals it receives. Trying to infer a "stop" from scroll behavior creates tight coupling to AI provider internals. | `onResponseComplete()` is the correct signal for stop — consuming app calls it when generation stops for any reason. Package responds identically whether stop was normal completion or user-initiated. |
+| Sticky "today / yesterday" date separators that float above messages | Requested because major chat apps have these | Requires the package to understand message semantics (which items are date headers, which are messages). Out of scope — scroll logic only. | Document pattern: consuming app renders date headers as regular list items; `scrollview_observer` can track their position if needed. |
+| Dual-axis scroll (horizontal message swipe + vertical chat scroll) | "Swipe to reply like iMessage" | Introduces gesture recognizer competition between the horizontal swipe and vertical chat scroll. Complex to arbitrate correctly, and the package has no knowledge of individual message items. | Out of scope. Gesture arbitration belongs in the message widget layer, not the scroll container. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[Reverse-list ordering]
-    └──required by──> [Scroll-to-bottom on new message]
-    └──required by──> [Top-anchor-on-send]
-    └──required by──> [Preserve scroll position on history scroll]
+[rest layout mode]
+    └──required by──> [response completion transition: active-turn → rest]
+    └──required by──> [idle_at_bottom state]
+    └──required by──> [history_browsing state]
 
-[Top-anchor-on-send]
-    └──requires──> [Streamed response height tracking]
-    └──requires──> [Dynamic filler space management]
-                       └──requires──> [Streamed response height tracking]
+[active-turn layout mode]
+    └──required by──> [streaming_following state]
+    └──required by──> [streaming_detached state]
+    └──requires──> [top-anchor-on-send] (v1.0 feature, must remain)
+    └──requires──> [dynamic filler space] (v1.0 feature, must remain)
+    └──requires──> [content-bounded filler recomputation] (v2.0 improvement)
 
-[Preserve scroll position on history scroll]
-    └──required by──> [New-message-while-scrolling-history reset]
+[5-state machine]
+    └──requires──> [rest layout mode]
+    └──requires──> [active-turn layout mode]
+    └──requires──> [auto-follow during streaming]
+    └──requires──> [scroll-detach on user drag]
+    └──requires──> [re-attach on return to bottom]
+    └──enables──> [exposed scroll state on controller]
 
-[Manual scroll resume]
-    └──enhances──> [No auto-scroll during streaming]
+[auto-follow during streaming]
+    └──requires──> [streaming_following state] (from 5-state machine)
+    └──conflicts──> [streaming_detached state]
 
-[Keyboard-aware scroll compensation]
-    └──enhances──> [Scroll-to-bottom on new message]
-    └──enhances──> [Top-anchor-on-send]
+[scroll-detach on user drag]
+    └──transitions to──> [streaming_detached state]
+    └──required by──> [scroll-to-bottom FAB visibility]
 
-[Controller lifecycle hooks]
-    └──triggers──> [Top-anchor-on-send]
-    └──triggers──> [Dynamic filler space management]
-    └──triggers──> [New-message-while-scrolling-history reset]
+[re-attach on return to bottom]
+    └──transitions to──> [streaming_following state]
+    └──required by──> [scroll-to-bottom FAB tap behavior]
 
-[Scroll-to-bottom FAB]
-    └──requires──> [Preserve scroll position on history scroll]  (needs "am I behind?" state)
+[smart down-button: jump to active-turn]
+    └──requires──> [active-turn anchor offset stored at turn start]
+    └──requires──> [streaming_detached state] (only relevant when detached)
+    └──conflicts──> [naive scroll-to-bottom (maxScrollExtent)]
 
-[Top-anchor-on-send] ──conflicts──> [Auto-scroll-to-bottom during streaming]
-[No auto-scroll during streaming] ──conflicts──> [Auto-scroll-to-bottom during streaming]
+[content-bounded dynamic spacing]
+    └──requires──> [dynamic filler space] (v1.0 base)
+    └──requires──> [content height measurement]
+    └──enhances──> [response completion transition]
+
+[response completion transition: active-turn → rest]
+    └──requires──> [content-bounded dynamic spacing]
+    └──requires──> [rest layout mode]
+    └──triggered by──> [onResponseComplete()]
+
+[exposed scroll state on controller]
+    └──requires──> [5-state machine]
+    └──enables──> [scroll-to-bottom FAB visibility] (consuming app reads state)
 ```
 
 ### Dependency Notes
 
-- **Top-anchor-on-send requires streamed response height tracking:** The filler spacer height is `viewport_height - anchor_message_height - response_height_so_far`. Without measuring the response height in real time, the spacer cannot be computed and the anchor will drift.
-- **Dynamic filler space requires streamed response height tracking:** The two features are inseparable — filler is the mechanism that keeps the anchor stable as content grows.
-- **Controller lifecycle hooks trigger the anchor sequence:** `onUserMessageSent()` is the entry point for the entire top-anchor sequence. Without a clean hook, consuming apps must manipulate scroll offsets themselves, which is error-prone.
-- **Keyboard-aware compensation enhances anchor positioning:** When the keyboard opens after the user taps a text field to send, the viewport shrinks. The anchor target position must be recalculated against the reduced viewport height.
-- **Top-anchor-on-send conflicts with auto-scroll-to-bottom during streaming:** These are mutually exclusive scroll strategies. The package must implement only one; auto-scroll-to-bottom is the anti-feature.
-- **Preserve scroll position on history scroll is a prerequisite for new-message reset:** You cannot detect "user was in history" without the preservation logic already tracking scroll offset vs. bottom threshold.
+- **5-state machine requires both layout modes:** The machine transitions between rest (idle_at_bottom, history_browsing) and active-turn (submitted_waiting_response, streaming_following, streaming_detached) modes. Neither mode can be removed without collapsing the machine.
+- **Auto-follow conflicts with streaming_detached:** These are mutually exclusive behaviors — the state machine enforces the conflict structurally. No boolean flag needed.
+- **Smart down-button requires stored anchor offset:** On `onUserMessageSent()`, the package must record the scroll position of the active-turn anchor. Without this, the button can only target `maxScrollExtent` which moves as streaming grows.
+- **Content-bounded spacing is a prerequisite for a clean completion transition:** Without clamping the filler, removing it at completion causes a scroll offset change that looks like a jump.
+- **Scroll state on controller is low-cost but high-value:** A `ValueNotifier<AiChatScrollState>` enables consuming apps to drive their own UI (FABs, input bar state) without polling or custom callbacks.
 
 ---
 
 ## MVP Definition
 
-### Launch With (v1)
+### Launch With (v2.0)
 
-Minimum viable product — what's needed to validate the core behavior and be useful to Flutter developers building AI chat.
+The minimum for a coherent v2.0 release that justifies the version bump and delivers the milestone goal.
 
-- [ ] Reverse-list ordering support — foundational; without it the package cannot be used in a conventional chat layout
-- [ ] `AiChatScrollController` with `onUserMessageSent()` and `onResponseComplete()` — the primary API surface that consuming apps integrate against
-- [ ] `AiChatScrollView` wrapper widget — the lightweight integration point over any `ListView` / `CustomScrollView`
-- [ ] Top-anchor-on-send: viewport snaps so user message is at the top — the core differentiating behavior
-- [ ] Dynamic filler space management during streaming — required to keep the anchor stable while the AI response grows
-- [ ] No auto-scroll during streaming — preserves the anchor; the package must not undo the snap with scroll-to-bottom logic
-- [ ] Manual scroll resume: user drag cancels any managed scroll, no re-hijacking until next `onUserMessageSent()` — critical for usability when AI response exceeds viewport
-- [ ] New-message-while-in-history: reset to top-anchor pattern — ensures the behavior is consistent even if user scrolled up before sending
-- [ ] No scroll jank on message insertion — baseline quality bar; without this the package is unusable in practice
-- [ ] pub.dev-ready package structure with example app — required for distribution; this is a package, not an internal library
+- [ ] Two layout modes (rest and active-turn) — the foundational redesign; everything else builds on this
+- [ ] 5-state machine: `idle_at_bottom`, `submitted_waiting_response`, `streaming_following`, `streaming_detached`, `history_browsing` — formalizes behavior and eliminates flag-based bugs
+- [ ] Auto-follow during streaming in `streaming_following` state — the core new behavior; without this the package is still v1.0
+- [ ] Scroll-detach to `streaming_detached` on user drag during streaming — required; auto-follow without detach = the worst scroll bug
+- [ ] Re-attach to `streaming_following` when user returns to bottom — required for detach to be usable
+- [ ] Smart down-button target: scroll to active-turn composition, not absolute bottom — the differentiating detail that justifies "smart"
+- [ ] Content-bounded dynamic spacing — eliminates the v1.0 overscroll-into-empty-space bug
+- [ ] Response completion transition: active-turn → rest layout — closes the loop; without this the layout stays stuck in active-turn forever
+- [ ] Exposed `scrollState` (`ValueNotifier`) on controller — enables consuming apps to drive FAB and other UI
+- [ ] `isAtBottom` and `scrollToBottom()` on controller (already v1.0) — must continue working correctly in the new state machine
 
-### Add After Validation (v1.x)
+### Add After Validation (v2.x)
 
-Features to add once the core is working and adopted.
+Features to add after v2.0 ships and real-world usage reveals actual gaps.
 
-- [ ] "Scroll to bottom" FAB/indicator — add if pub.dev issues or community feedback indicates users want this; simple to add but not needed for the anchor UX
-- [ ] Keyboard-aware scroll compensation — add if reported as issue; Flutter's default `Scaffold` `resizeToAvoidBottomInset` may already handle enough for most apps
-- [ ] Animation curves for anchor snap — add if the default `jumpTo` feels abrupt on device; `animateTo` with a short curve is an easy enhancement
-- [ ] RTL / bidirectional layout support — add if international users or apps request it; directional flag in `AiChatScrollView`
+- [ ] Unread-content indicator (boolean only, no count) on controller — add if issues report users can't tell they missed content while detached
+- [ ] Animated layout mode transitions — add only if v2.0 instant transitions generate complaints; animation correctness is hard
+- [ ] RTL / bidirectional text layout support — add if international user issues filed
+- [ ] Accessibility: `SemanticsService.announce` for new messages while detached — low effort add; high value for screen reader users
 
-### Future Consideration (v2+)
+### Future Consideration (v3+)
 
-Features to defer until product-market fit is established.
+Features to defer until the v2.0 architecture is proven stable.
 
-- [ ] Pagination / infinite scroll for older message history — distinct technical problem; significant added complexity; not needed for the streaming anchor use case
-- [ ] Desktop and web scroll support — mobile-first is correct for v1; desktop requires separate physics strategy
-- [ ] Accessibility: `SemanticsService.announce` for new messages — valuable but not blocking for initial launch; can be added without API changes
-- [ ] Observability: scroll state callbacks for analytics / testing — useful for integration testing and analytics, low priority for initial adoption
+- [ ] Pagination / infinite scroll for older message history — distinct technical problem from streaming anchor; out of scope until explicitly requested
+- [ ] Desktop / web scroll support — mobile-first is correct; desktop requires separate physics strategy
+- [ ] Per-turn scroll state callbacks for analytics / testing — useful but low adoption priority
 
 ---
 
@@ -138,69 +155,66 @@ Features to defer until product-market fit is established.
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Reverse-list ordering | HIGH | LOW | P1 |
-| Top-anchor-on-send | HIGH | HIGH | P1 |
-| Dynamic filler space during streaming | HIGH | HIGH | P1 |
-| No auto-scroll during streaming | HIGH | MEDIUM | P1 |
-| `AiChatScrollController` lifecycle hooks | HIGH | LOW | P1 |
-| `AiChatScrollView` wrapper widget | HIGH | LOW | P1 |
-| Manual scroll resume (user drag) | HIGH | MEDIUM | P1 |
-| New-message-while-in-history reset | HIGH | MEDIUM | P1 |
-| No scroll jank on insertion | HIGH | MEDIUM | P1 |
-| pub.dev package structure + example | HIGH | LOW | P1 |
-| Scroll-to-bottom FAB | MEDIUM | MEDIUM | P2 |
-| Keyboard-aware scroll compensation | MEDIUM | MEDIUM | P2 |
-| Anchor snap animation curve | LOW | LOW | P2 |
+| Two layout modes (rest + active-turn) | HIGH | HIGH | P1 |
+| 5-state machine | HIGH | HIGH | P1 |
+| Auto-follow during streaming | HIGH | MEDIUM | P1 |
+| Scroll-detach on user drag | HIGH | MEDIUM | P1 |
+| Re-attach on return to bottom | HIGH | MEDIUM | P1 |
+| Content-bounded dynamic spacing | HIGH | HIGH | P1 |
+| Response completion transition | HIGH | HIGH | P1 |
+| Smart down-button (active-turn target) | MEDIUM | MEDIUM | P1 |
+| Exposed `scrollState` ValueNotifier | HIGH | LOW | P1 |
+| `isAtBottom` + `scrollToBottom()` (existing) | HIGH | LOW | P1 |
+| Unread-content boolean indicator | MEDIUM | LOW | P2 |
+| Animated layout transitions | MEDIUM | HIGH | P3 |
 | RTL support | MEDIUM | LOW | P2 |
-| Pagination / infinite scroll | MEDIUM | HIGH | P3 |
-| Desktop/web support | LOW | HIGH | P3 |
-| Accessibility announcements | MEDIUM | LOW | P3 |
-| Observability/analytics callbacks | LOW | LOW | P3 |
+| Accessibility announcements | MEDIUM | LOW | P2 |
+| Pagination / infinite scroll | LOW | HIGH | P3 |
+| Desktop / web support | LOW | HIGH | P3 |
 
 **Priority key:**
-- P1: Must have for launch — defines the package's value proposition
-- P2: Should have, add when possible — improves quality but not blocking
-- P3: Nice to have, future consideration
+- P1: Required for v2.0 release — directly serves the milestone goal
+- P2: Should add in v2.x — improves quality once core is stable
+- P3: Defer to v3+ or until explicitly requested
 
 ---
 
 ## Competitor Feature Analysis
 
-| Feature | scrollview_observer | lorien_chat_list | react-native-streaming-message-list | flutter_chat_ui | Our Approach |
-|---------|---------------------|------------------|--------------------------------------|-----------------|--------------|
-| Reverse-list ordering | Yes (wraps existing) | Yes | Yes | Yes | Yes (required foundation) |
-| Auto-scroll on new message | Yes | Yes (configurable threshold) | Yes | Yes | Only when user is already at bottom; NOT during streaming |
-| Preserve position in history | Yes | Yes | Yes | Yes | Yes |
-| Top-anchor-on-send (snap) | No | No | Yes (AnchorItem wrapper) | No | Yes — the core differentiator |
-| Dynamic filler/spacer for streaming | No | No | Yes (dynamic placeholder) | No | Yes — required for anchor stability |
-| No auto-scroll during streaming | Generative mode exists but is complex to configure | No | Yes | No | Yes — default behavior, not opt-in |
-| Streaming height tracking | Partial (observer) | No | Yes (StreamingItem) | No | Yes |
-| Controller lifecycle hooks | No (observer callbacks) | No (widget-level) | Hook-based | No | Yes — `onUserMessageSent()`, `onResponseComplete()` |
-| Scroll-to-bottom indicator | No | No | Yes (via hook) | Yes | P2 — post-launch |
-| Pagination (older messages) | No | Yes (`onLoadMoreCallback`) | No | Yes | Explicit non-goal for v1 |
-| Chat UI components | No | No | No | Yes (full UI) | Deliberate non-goal |
-| Flutter native | Yes | Yes | No (React Native) | Yes | Yes |
-| pub.dev | Yes | Yes | No (npm) | Yes | Yes |
+How major AI chat apps and libraries handle the v2.0 features.
 
-**Gap identified:** No Flutter-native package implements the top-anchor-on-send + dynamic filler pattern. `scrollview_observer` is the closest in the streaming preservation space but does not expose a clean "snap user message to top on send" API and requires complex configuration for generative mode. The React Native `react-native-streaming-message-list` is the only library that solves the exact same problem, but for a different platform.
+| Feature | ChatGPT (web/iOS) | Claude (iOS) | react-native-streaming-message-list | stream_chat_flutter | Our v2.0 Approach |
+|---------|-------------------|--------------|--------------------------------------|---------------------|--------------------|
+| Auto-follow during streaming | Yes — follows by default when at bottom | Yes — follows when at bottom | Yes (isStreaming=true) | N/A (not AI streaming) | Yes — `streaming_following` state |
+| Scroll-detach on user drag | Yes — pauses autoscroll on any upward drag | Yes | Yes — tracked via `isAtEnd` + threshold | Partial — dialog-aware only | Yes — `UserScrollNotification` triggers transition to `streaming_detached` |
+| Re-attach on return to bottom | Yes — confirmed by multiple sources; returning to bottom resumes follow | Yes | Yes | N/A | Yes — pixel threshold triggers transition back to `streaming_following` |
+| Scroll-to-bottom FAB when detached | No native FAB — users report this as a gap (third-party extensions add it) | Yes — visible down-arrow button | Yes (via `isAtEnd` + `contentFillsViewport` hook) | Yes — `ScrollToBottomButton` component with unread count | Yes — expose `scrollState` so consuming app renders FAB |
+| Two distinct layout modes | No — single layout, bottom-grows | Yes — top-anchor active turn + rest history | Partial — streaming vs not-streaming | No | Yes — formal rest / active-turn mode distinction |
+| Smart down-button (jump to active turn, not absolute bottom) | No — jumps to absolute bottom | Yes — jumps to the active turn composition | No — targets end of list | No | Yes — stores active-turn anchor offset on turn start |
+| Formal state machine | No — implicit via boolean flags | Unknown (internal) | Implicit (isStreaming flag) | No | Yes — explicit 5-state enum |
+| Content-bounded spacing | N/A (web) | Yes — no empty scroll area | Partial — placeholder managed but can overscroll | N/A | Yes — clamped filler height |
+| Completion transition: active → rest | N/A | Yes — smooth settle to rest | Partial (isStreaming=false returns to standard list) | N/A | Yes — filler removal + layout reflow |
+| Flutter native | No | No | No (React Native) | Yes | Yes |
+
+**Key gap confirmed:** No Flutter-native package models dual layout modes + a formal scroll state machine + auto-follow with clean detach/re-attach semantics. The closest conceptual match is `react-native-streaming-message-list` (React Native), which solves the anchor problem but lacks the state machine formalism and dual-layout model. Claude's own iOS app appears to implement exactly the behavior described in v2.0, but no Flutter package currently provides it.
 
 ---
 
 ## Sources
 
-- [scrollview_observer on pub.dev](https://pub.dev/packages/scrollview_observer) — MEDIUM confidence, official package page
-- [scrollview_observer Chat Observer wiki](https://github.com/fluttercandies/flutter_scrollview_observer/wiki/3%E3%80%81Chat-Observer) — MEDIUM confidence, official wiki
-- [lorien_chat_list on pub.dev](https://pub.dev/packages/lorien_chat_list) — MEDIUM confidence, official package page
-- [anchor_scroll_controller on pub.dev via Flutter Gems](https://fluttergems.dev/packages/anchor_scroll_controller/) — LOW confidence, aggregator
-- [react-native-streaming-message-list on GitHub](https://github.com/bacarybruno/react-native-streaming-message-list) — HIGH confidence for feature design; LOW confidence for direct Flutter applicability (different runtime)
-- [flutter_chat_ui on pub.dev](https://pub.dev/packages/flutter_chat_ui) — MEDIUM confidence, official package page
-- [stream_chat_flutter unread indicator](https://github.com/GetStream/stream-chat-flutter/issues/2184) — MEDIUM confidence, issue thread
-- [Conversational AI UI comparison 2025 — IntuitionLabs](https://intuitionlabs.ai/articles/conversational-ai-ui-comparison-2025) — LOW confidence, third-party analysis
-- [Flutter ListView reverse scroll behavior — GitHub Issue #17303](https://github.com/flutter/flutter/issues/17303) — HIGH confidence, official Flutter repo
-- [Flutter scroll position preservation — GitHub Issue #96398](https://github.com/flutter/flutter/issues/96398) — HIGH confidence, official Flutter repo
-- [SemanticsService.announce — Flutter accessibility docs](https://docs.flutter.dev/ui/accessibility) — HIGH confidence, official docs
+- [react-native-streaming-message-list on GitHub](https://github.com/bacarybruno/react-native-streaming-message-list) — HIGH confidence for feature design and behavioral patterns; the closest cross-platform analog to this package
+- [Building reliable AI chat on mobile — Doctolib, Medium, Feb 2026](https://medium.com/doctolib/building-reliable-ai-chat-on-mobile-01015d74422e) — MEDIUM confidence (403 on direct fetch, but search summary confirmed library primitives and patterns)
+- [How to stop chat autoscroll when AI message streams — TanStack/virtual Discussion #730](https://github.com/TanStack/virtual/discussions/730) — HIGH confidence; direct discussion of the detach/re-attach problem with real implementation approaches
+- [How to Stop ChatGPT Autoscroll — PromptLayer Blog](https://blog.promptlayer.com/how-to-stop-chatgpt-autoscroll/) — MEDIUM confidence; confirms ChatGPT's detach-on-upward-scroll and re-attach-on-return-to-bottom behavior
+- [ScrollToBottomButton — Stream Chat React Native Docs](https://getstream.io/chat/docs/sdk/react-native/ui-components/scroll-to-bottom-button/) — HIGH confidence; confirms scroll-to-bottom button as table stakes with unread count pattern
+- [Customizing MessageListView scroll behavior — Stream Chat Android Docs](https://getstream.io/chat/docs/sdk/android/ui/guides/customizing-message-list-scroll-behavior/) — MEDIUM confidence; documents dialog-aware scroll lock pattern
+- [Handling scroll behavior for AI Chat Apps — jhakim.com](https://jhakim.com/blog/handling-scroll-behavior-for-ai-chat-apps) — MEDIUM confidence; confirms isAtBottom detection + debounced auto-follow pattern
+- [Scroll to bottom widget discussion — flyerhq/flutter_chat_ui Discussion #163](https://github.com/flyerhq/flutter_chat_ui/discussions/163) — MEDIUM confidence; confirms scroll-to-bottom FAB was a feature request, now shipped in v2
+- [Intuitive Scrolling for Chatbot Message Streaming — Hashnode](https://tuffstuff9.hashnode.dev/intuitive-scrolling-for-chatbot-message-streaming) — LOW confidence (403 on fetch, search summary only)
+- [assistant-ui — TypeScript/React library for AI chat](https://www.assistant-ui.com/) — MEDIUM confidence; confirmed auto-scroll + streaming + viewport management features exist but docs don't expose internals
+- [AI SDK UI Chatbot — Vercel AI SDK Docs](https://ai-sdk.dev/docs/ai-sdk-ui/chatbot) — MEDIUM confidence; no scroll behavior docs found but confirms streaming-first design philosophy
 
 ---
 
-*Feature research for: Flutter AI chat scroll/viewport management package (ai_chat_scroll)*
-*Researched: 2026-03-15*
+*Feature research for: Flutter AI chat scroll/viewport management package (ai_chat_scroll) — v2.0 dual-layout milestone*
+*Researched: 2026-03-17*
