@@ -68,25 +68,25 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STATE-01 | — | Pending |
-| STATE-02 | — | Pending |
-| STATE-03 | — | Pending |
-| FOLLOW-01 | — | Pending |
-| FOLLOW-02 | — | Pending |
-| FOLLOW-03 | — | Pending |
-| LAYOUT-01 | — | Pending |
-| LAYOUT-02 | — | Pending |
-| LAYOUT-03 | — | Pending |
-| LAYOUT-04 | — | Pending |
-| DBUTTON-01 | — | Pending |
-| DBUTTON-02 | — | Pending |
-| INPUT-01 | — | Pending |
+| STATE-01 | Phase 6 | Pending |
+| STATE-02 | Phase 6 | Pending |
+| STATE-03 | Phase 6 | Pending |
+| FOLLOW-01 | Phase 7 | Pending |
+| FOLLOW-02 | Phase 7 | Pending |
+| FOLLOW-03 | Phase 7 | Pending |
+| LAYOUT-01 | Phase 8 | Pending |
+| LAYOUT-02 | Phase 8 | Pending |
+| LAYOUT-03 | Phase 8 | Pending |
+| LAYOUT-04 | Phase 8 | Pending |
+| DBUTTON-01 | Phase 9 | Pending |
+| DBUTTON-02 | Phase 9 | Pending |
+| INPUT-01 | Phase 8 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 13 total
-- Mapped to phases: 0
-- Unmapped: 13 ⚠️
+- Mapped to phases: 13
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-17*
-*Last updated: 2026-03-17 after initial definition*
+*Last updated: 2026-03-17 after roadmap creation (Phases 6-10)*
