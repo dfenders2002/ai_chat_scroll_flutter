@@ -87,7 +87,7 @@ Plans:
 
 </details>
 
-### 🚧 v2.0 — Dual-Layout Scroll Redesign (In Progress)
+### v2.0 — Dual-Layout Scroll Redesign (In Progress)
 
 **Milestone Goal:** Redesign the scroll system around two layout modes (rest vs. active-turn) with auto-follow streaming, a 5-state machine, smart down-button, and content-bounded dynamic spacing.
 
@@ -100,10 +100,10 @@ Plans:
   2. Calling onUserMessageSent() transitions state to submittedWaitingResponse and calling onResponseComplete() while at bottom transitions to idleAtBottom — confirmed by widget test assertions on the ValueNotifier
   3. All v1.0 existing widget tests pass without modification — no public API signatures changed
   4. dart analyze reports zero warnings or errors after the migration
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 06-01: AiChatScrollState enum, controller migration from booleans, scrollState ValueListenable, full transition table
+- [ ] 06-01-PLAN.md — AiChatScrollState enum, controller migration from booleans, scrollState ValueListenable, full transition table
 
 #### Phase 7: Auto-Follow and Scroll Detach
 **Goal**: During streaming the viewport automatically tracks the growing AI response, detaches immediately when the user drags away, and re-attaches when the user returns to the live bottom
@@ -165,7 +165,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 6 → 7 → 8 → 9 → 10
+Phases execute in numeric order: 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -174,7 +174,7 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10
 | 3. Streaming Anchor Behavior | v1.0 | 2/2 | Complete | 2026-03-15 |
 | 4. Polish and Publishing | v1.0 | 2/2 | Complete | 2026-03-15 |
 | 5. v1.x Enhancements | v1.0 | 2/2 | Complete | 2026-03-15 |
-| 6. State Machine Foundation | v2.0 | 0/TBD | Not started | - |
+| 6. State Machine Foundation | v2.0 | 0/1 | Planning | - |
 | 7. Auto-Follow and Scroll Detach | v2.0 | 0/TBD | Not started | - |
 | 8. Dual Layout Modes and Response Completion | v2.0 | 0/TBD | Not started | - |
 | 9. Smart Down-Button | v2.0 | 0/TBD | Not started | - |
