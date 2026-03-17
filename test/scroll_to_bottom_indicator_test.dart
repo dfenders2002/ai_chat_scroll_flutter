@@ -222,6 +222,8 @@ void main() {
 
   // ---------------------------------------------------------------------------
   // Test 7: atBottomThreshold is configurable; near-bottom counts as "at bottom"
+  // In reverse:true, pixels=0 is the live bottom. Positive pixels = scrolled
+  // into history. atBottomThreshold checks pixels <= threshold.
   // ---------------------------------------------------------------------------
   testWidgets(
     'Test 7: atBottomThreshold is configurable — items within threshold count as at bottom',
@@ -231,7 +233,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      // Use large threshold so a position within 100px of bottom still counts as bottom
+      // Use large threshold so a position within 100px of bottom still counts
       final controller = AiChatScrollController(atBottomThreshold: 100.0);
       await tester.pumpWidget(buildChat(
         controller: controller,
@@ -240,27 +242,25 @@ void main() {
       ));
       await tester.pump();
 
-      // Widget starts at the top (pixels = 0) with 20×100px = 2000px content
-      // and 600px viewport → maxScrollExtent = 1400px.
-      // isAtBottom.value defaults to true before any scroll event fires;
-      // after pump() the scroll listener fires and updates to false.
-      expect(controller.isAtBottom.value, isFalse);
+      // reverse:true starts at pixels=0 (live bottom) → isAtBottom = true
+      expect(controller.isAtBottom.value, isTrue);
 
-      // Scroll to near-bottom: drag up strongly so pixels ≈ maxScrollExtent - 60px.
-      // Drag down (positive y) scrolls toward top; drag up (negative y) scrolls toward bottom.
+      // Drag into history: in reverse:true, positive y-offset increases pixels
+      // (scrolls away from bottom). Move 60px into history → pixels ≈ 60.
+      // 60 < threshold 100 → still "at bottom".
       await tester.drag(
         find.byType(CustomScrollView),
-        const Offset(0, -1340), // go to ~60px from bottom (1400 - 1340 = 60 < threshold 100)
+        const Offset(0, 60),
       );
       await tester.pump();
 
-      // Within 100px threshold → should be considered "at bottom"
+      // Within 100px threshold → should still be considered "at bottom"
       expect(controller.isAtBottom.value, isTrue);
 
-      // Drag back up — beyond the threshold
+      // Now drag further into history — beyond the threshold
       await tester.drag(
         find.byType(CustomScrollView),
-        const Offset(0, 200), // 200px back toward top → now 260px from bottom > 100px threshold
+        const Offset(0, 200), // pixels ≈ 260 > threshold 100
       );
       await tester.pump();
 
