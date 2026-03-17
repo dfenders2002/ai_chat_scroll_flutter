@@ -145,6 +145,36 @@ class AiChatScrollController extends ChangeNotifier {
     });
   }
 
+  /// Called by [AiChatScrollView] when the user initiates a drag during streaming.
+  ///
+  /// Transitions [scrollState] from [AiChatScrollState.streamingFollowing] to
+  /// [AiChatScrollState.streamingDetached]. No-op if not in streamingFollowing.
+  void onUserScrolled() {
+    if (_scrollState.value == AiChatScrollState.streamingFollowing) {
+      _transition(AiChatScrollState.streamingDetached);
+    }
+  }
+
+  /// Called by [AiChatScrollView] when content growth is detected during
+  /// [AiChatScrollState.submittedWaitingResponse].
+  ///
+  /// Transitions to [AiChatScrollState.streamingFollowing].
+  void onContentGrowthDetected() {
+    if (_scrollState.value == AiChatScrollState.submittedWaitingResponse) {
+      _transition(AiChatScrollState.streamingFollowing);
+    }
+  }
+
+  /// Called by [AiChatScrollView] when the user scrolls back to the live bottom
+  /// during [AiChatScrollState.streamingDetached].
+  ///
+  /// Transitions to [AiChatScrollState.streamingFollowing] to resume auto-follow.
+  void onScrolledToBottom() {
+    if (_scrollState.value == AiChatScrollState.streamingDetached) {
+      _transition(AiChatScrollState.streamingFollowing);
+    }
+  }
+
   /// Signals that the AI response has finished streaming.
   ///
   /// After this call, the package stops maintaining the anchor position
@@ -168,13 +198,26 @@ class AiChatScrollController extends ChangeNotifier {
   /// The scroll animation uses a 300 ms [Curves.easeOut] curve.
   /// [isAtBottom] will become `true` as the animation completes and the
   /// scroll listener detects the new position.
+  ///
+  /// If called during streaming ([AiChatScrollState.streamingDetached] or
+  /// [AiChatScrollState.streamingFollowing]), resumes auto-follow by
+  /// transitioning to [AiChatScrollState.streamingFollowing].
   void scrollToBottom() {
     if (_scrollController == null || !_scrollController!.hasClients) return;
+    final isActivelyStreaming =
+        _scrollState.value == AiChatScrollState.streamingFollowing ||
+        _scrollState.value == AiChatScrollState.streamingDetached;
+
+    // In a reverse:true CustomScrollView, pixels=0 is the live bottom.
     _scrollController!.animateTo(
-      _scrollController!.position.maxScrollExtent,
+      0.0,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );
+
+    if (isActivelyStreaming) {
+      _transition(AiChatScrollState.streamingFollowing);
+    }
   }
 
   /// Releases resources and detaches from any [ScrollController].
