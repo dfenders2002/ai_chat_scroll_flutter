@@ -3,6 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ai_chat_scroll/ai_chat_scroll.dart';
 
 void main() {
+  // onUserMessageSent() calls SchedulerBinding.instance internally;
+  // ensureInitialized() makes that safe in pure unit tests.
+  TestWidgetsFlutterBinding.ensureInitialized();
   // ---------------------------------------------------------------------------
   // STATE-01: Enum has exactly 5 values
   // ---------------------------------------------------------------------------

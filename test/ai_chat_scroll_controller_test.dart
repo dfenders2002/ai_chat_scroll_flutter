@@ -49,12 +49,19 @@ void main() {
       controller.dispose();
     });
 
-    test('notifyListeners fires on onResponseComplete', () {
+    test('notifyListeners fires on onResponseComplete when state changes', () {
+      // onResponseComplete() notifies listeners only when it causes a state
+      // transition. Calling it from idleAtBottom (the initial state) with
+      // isAtBottom=true is a no-op — no notification. Calling it after
+      // onUserMessageSent() causes a transition and fires a notification.
       final controller = AiChatScrollController();
+      TestWidgetsFlutterBinding.ensureInitialized();
       var callCount = 0;
       controller.addListener(() => callCount++);
-      controller.onResponseComplete();
-      expect(callCount, equals(1));
+      controller.onUserMessageSent(); // -> submittedWaitingResponse (fires once)
+      final countAfterSend = callCount;
+      controller.onResponseComplete(); // -> idleAtBottom (fires once more)
+      expect(callCount, equals(countAfterSend + 1));
       controller.dispose();
     });
 

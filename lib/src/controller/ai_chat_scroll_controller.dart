@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
+import '../model/ai_chat_scroll_state.dart';
 
 /// Controls scroll behavior for an AI chat interface.
 ///
@@ -55,15 +56,31 @@ class AiChatScrollController extends ChangeNotifier {
 
   ScrollController? _scrollController;
 
-  /// Whether an AI response is currently streaming.
+  final ValueNotifier<AiChatScrollState> _scrollState =
+      ValueNotifier(AiChatScrollState.idleAtBottom);
+
+  /// The current scroll lifecycle state.
   ///
-  /// Set to `true` by [onUserMessageSent] and `false` by [onResponseComplete].
-  /// The [AiChatScrollView] listens to this via [addListener] to drive anchor
-  /// behavior and filler recomputation.
-  bool _streaming = false;
+  /// Use [ValueListenableBuilder] to reactively rebuild UI when state changes.
+  /// See [AiChatScrollState] for the meaning of each value.
+  ValueListenable<AiChatScrollState> get scrollState => _scrollState;
 
   /// Whether an AI response is currently streaming.
-  bool get isStreaming => _streaming;
+  ///
+  /// Derived from [scrollState]. Returns `true` for
+  /// [AiChatScrollState.submittedWaitingResponse],
+  /// [AiChatScrollState.streamingFollowing], and
+  /// [AiChatScrollState.streamingDetached].
+  bool get isStreaming =>
+      _scrollState.value == AiChatScrollState.submittedWaitingResponse ||
+      _scrollState.value == AiChatScrollState.streamingFollowing ||
+      _scrollState.value == AiChatScrollState.streamingDetached;
+
+  void _transition(AiChatScrollState next) {
+    if (_scrollState.value == next) return;
+    _scrollState.value = next;
+    notifyListeners();
+  }
 
   /// The distance from [ScrollPosition.maxScrollExtent] (in logical pixels)
   /// within which the user is considered to be "at the bottom".
@@ -115,18 +132,17 @@ class AiChatScrollController extends ChangeNotifier {
   /// Call this after adding the user's message to your message list.
   /// Safe to call before the widget is mounted — no-ops gracefully.
   ///
-  /// Sets [isStreaming] to `true` and notifies listeners, allowing the widget
-  /// tree to react by scheduling an anchor jump and setting up filler
-  /// recomputation.
+  /// Transitions [scrollState] to [AiChatScrollState.submittedWaitingResponse]
+  /// from any state, then notifies listeners so the widget tree can react by
+  /// scheduling an anchor jump and setting up filler recomputation.
   void onUserMessageSent() {
-    _streaming = true;
+    _transition(AiChatScrollState.submittedWaitingResponse);
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (_scrollController == null || !_scrollController!.hasClients) return;
       // The actual anchor jump is performed by the widget state via its
       // listener. The postFrameCallback guard here is retained from Phase 1
       // to ensure scroll commands are safe to dispatch.
     });
-    notifyListeners();
   }
 
   /// Signals that the AI response has finished streaming.
@@ -134,11 +150,14 @@ class AiChatScrollController extends ChangeNotifier {
   /// After this call, the package stops maintaining the anchor position
   /// and the user can scroll freely.
   ///
-  /// Sets [isStreaming] to `false` and notifies listeners, allowing the widget
-  /// tree to clear anchor state.
+  /// Transitions [scrollState] to [AiChatScrollState.idleAtBottom] if
+  /// [isAtBottom] is `true`, or [AiChatScrollState.historyBrowsing] if the
+  /// user has scrolled away.
   void onResponseComplete() {
-    _streaming = false;
-    notifyListeners();
+    final next = _isAtBottom.value
+        ? AiChatScrollState.idleAtBottom
+        : AiChatScrollState.historyBrowsing;
+    _transition(next);
   }
 
   /// Animates the scroll position to the bottom of the message list.
@@ -165,6 +184,7 @@ class AiChatScrollController extends ChangeNotifier {
   @override
   void dispose() {
     _isAtBottom.dispose();
+    _scrollState.dispose();
     _scrollController = null;
     super.dispose();
   }
