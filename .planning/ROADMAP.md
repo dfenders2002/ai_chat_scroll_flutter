@@ -114,10 +114,10 @@ Plans:
   2. When the user drags upward during streaming, auto-follow stops on the very next frame and state changes to streamingDetached — the viewport does not jump or fight the drag
   3. After detaching, tapping the down-button or manually scrolling back to the live bottom resumes auto-follow and transitions state back to streamingFollowing
   4. Auto-follow compensation never fires while in streamingDetached state — no spurious jumpTo calls corrupt user-initiated scroll position
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 07-01: ScrollMetricsNotification gating on streamingFollowing, ScrollUpdateNotification drag detection, re-attach threshold logic
+- [ ] 07-01-PLAN.md — State-gated auto-follow compensation, drag detach, scroll-back re-attach (TDD)
 
 #### Phase 8: Dual Layout Modes and Response Completion
 **Goal**: The chat viewport operates in two visually distinct modes — rest (bottom-aligned) and active-turn (user message near top with reading area below) — and transitions cleanly between them on response completion, with all offsets accounting for the inputbar and keyboard
@@ -175,7 +175,7 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9 -> 10
 | 4. Polish and Publishing | v1.0 | 2/2 | Complete | 2026-03-15 |
 | 5. v1.x Enhancements | v1.0 | 2/2 | Complete | 2026-03-15 |
 | 6. State Machine Foundation | 1/1 | Complete   | 2026-03-17 | - |
-| 7. Auto-Follow and Scroll Detach | v2.0 | 0/TBD | Not started | - |
+| 7. Auto-Follow and Scroll Detach | v2.0 | 0/1 | Planning complete | - |
 | 8. Dual Layout Modes and Response Completion | v2.0 | 0/TBD | Not started | - |
 | 9. Smart Down-Button | v2.0 | 0/TBD | Not started | - |
 | 10. Integration and Regression Hardening | v2.0 | 0/TBD | Not started | - |
