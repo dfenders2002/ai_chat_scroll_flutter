@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: — Dual-Layout Scroll Redesign
 status: planning
-stopped_at: Phase 6 context gathered
-last_updated: "2026-03-17T17:23:30.863Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-17T18:10:33.518Z"
 last_activity: 2026-03-17 — v2.0 roadmap created, phases 6-10 defined
 progress:
-  total_phases: 10
-  completed_phases: 5
-  total_plans: 8
-  completed_plans: 8
+  total_phases: 5
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
   percent: 0
 ---
 
@@ -56,6 +56,7 @@ Recent decisions affecting current work:
 - [v1.0]: isAtBottom is signal-only ValueListenable — no built-in FAB widget shipped
 - [v1.0]: viewportDimension delta math: filler += delta keeps maxScrollExtent invariant under keyboard changes
 - [v2.0 CRITICAL]: Define AiChatScrollState enum and migrate controller BEFORE any new behavioral code — boolean proliferation is the top risk
+- [Phase 06]: isStreaming kept as derived getter (no deprecation) for backward compat; _transition() calls both _scrollState.value and notifyListeners() to notify both ValueListenable and ChangeNotifier audiences
 
 ### Pending Todos
 
@@ -69,6 +70,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T17:23:30.853Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-state-machine-foundation/06-CONTEXT.md
+Last session: 2026-03-17T18:10:33.515Z
+Stopped at: Completed 06-01-PLAN.md
+Resume file: None

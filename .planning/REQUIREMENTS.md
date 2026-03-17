@@ -9,9 +9,9 @@ Requirements for the dual-layout scroll redesign. Each maps to roadmap phases.
 
 ### State Machine
 
-- [ ] **STATE-01**: Scroll system uses a 5-state enum (`idleAtBottom`, `submittedWaitingResponse`, `streamingFollowing`, `streamingDetached`, `historyBrowsing`) replacing boolean flags
-- [ ] **STATE-02**: State transitions are event-driven: `onUserMessageSent()` → submittedWaitingResponse, first AI token → streamingFollowing, user drag during streaming → streamingDetached, down-button tap → streamingFollowing, `onResponseComplete()` at bottom → idleAtBottom, `onResponseComplete()` away from bottom → historyBrowsing
-- [ ] **STATE-03**: Scroll state is exposed as `ValueNotifier<AiChatScrollState>` so consuming apps can build conditional UI (e.g., different FAB behavior per state)
+- [x] **STATE-01**: Scroll system uses a 5-state enum (`idleAtBottom`, `submittedWaitingResponse`, `streamingFollowing`, `streamingDetached`, `historyBrowsing`) replacing boolean flags
+- [x] **STATE-02**: State transitions are event-driven: `onUserMessageSent()` → submittedWaitingResponse, first AI token → streamingFollowing, user drag during streaming → streamingDetached, down-button tap → streamingFollowing, `onResponseComplete()` at bottom → idleAtBottom, `onResponseComplete()` away from bottom → historyBrowsing
+- [x] **STATE-03**: Scroll state is exposed as `ValueNotifier<AiChatScrollState>` so consuming apps can build conditional UI (e.g., different FAB behavior per state)
 
 ### Auto-Follow
 
@@ -68,9 +68,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STATE-01 | Phase 6 | Pending |
-| STATE-02 | Phase 6 | Pending |
-| STATE-03 | Phase 6 | Pending |
+| STATE-01 | Phase 6 | Complete |
+| STATE-02 | Phase 6 | Complete |
+| STATE-03 | Phase 6 | Complete |
 | FOLLOW-01 | Phase 7 | Pending |
 | FOLLOW-02 | Phase 7 | Pending |
 | FOLLOW-03 | Phase 7 | Pending |

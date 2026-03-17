@@ -100,7 +100,7 @@ Plans:
   2. Calling onUserMessageSent() transitions state to submittedWaitingResponse and calling onResponseComplete() while at bottom transitions to idleAtBottom — confirmed by widget test assertions on the ValueNotifier
   3. All v1.0 existing widget tests pass without modification — no public API signatures changed
   4. dart analyze reports zero warnings or errors after the migration
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 06-01-PLAN.md — AiChatScrollState enum, controller migration from booleans, scrollState ValueListenable, full transition table
@@ -174,7 +174,7 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9 -> 10
 | 3. Streaming Anchor Behavior | v1.0 | 2/2 | Complete | 2026-03-15 |
 | 4. Polish and Publishing | v1.0 | 2/2 | Complete | 2026-03-15 |
 | 5. v1.x Enhancements | v1.0 | 2/2 | Complete | 2026-03-15 |
-| 6. State Machine Foundation | v2.0 | 0/1 | Planning | - |
+| 6. State Machine Foundation | 1/1 | Complete   | 2026-03-17 | - |
 | 7. Auto-Follow and Scroll Detach | v2.0 | 0/TBD | Not started | - |
 | 8. Dual Layout Modes and Response Completion | v2.0 | 0/TBD | Not started | - |
 | 9. Smart Down-Button | v2.0 | 0/TBD | Not started | - |
