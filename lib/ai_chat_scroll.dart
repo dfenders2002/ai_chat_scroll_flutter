@@ -6,4 +6,5 @@
 library ai_chat_scroll;
 
 export 'src/controller/ai_chat_scroll_controller.dart';
+export 'src/model/ai_chat_scroll_state.dart';
 export 'src/widgets/ai_chat_scroll_view.dart';
