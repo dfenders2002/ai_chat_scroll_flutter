@@ -15,9 +15,9 @@ Requirements for the dual-layout scroll redesign. Each maps to roadmap phases.
 
 ### Auto-Follow
 
-- [ ] **FOLLOW-01**: During `streamingFollowing` state, viewport automatically tracks the growing AI response so newest tokens remain visible
-- [ ] **FOLLOW-02**: When user drags upward during streaming, auto-follow stops immediately and state transitions to `streamingDetached`
-- [ ] **FOLLOW-03**: Auto-follow resumes when user taps down-button or manually scrolls back to live bottom, transitioning state to `streamingFollowing`
+- [x] **FOLLOW-01**: During `streamingFollowing` state, viewport automatically tracks the growing AI response so newest tokens remain visible
+- [x] **FOLLOW-02**: When user drags upward during streaming, auto-follow stops immediately and state transitions to `streamingDetached`
+- [x] **FOLLOW-03**: Auto-follow resumes when user taps down-button or manually scrolls back to live bottom, transitioning state to `streamingFollowing`
 
 ### Layout Modes
 
@@ -71,9 +71,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STATE-01 | Phase 6 | Complete |
 | STATE-02 | Phase 6 | Complete |
 | STATE-03 | Phase 6 | Complete |
-| FOLLOW-01 | Phase 7 | Pending |
-| FOLLOW-02 | Phase 7 | Pending |
-| FOLLOW-03 | Phase 7 | Pending |
+| FOLLOW-01 | Phase 7 | Complete |
+| FOLLOW-02 | Phase 7 | Complete |
+| FOLLOW-03 | Phase 7 | Complete |
 | LAYOUT-01 | Phase 8 | Pending |
 | LAYOUT-02 | Phase 8 | Pending |
 | LAYOUT-03 | Phase 8 | Pending |

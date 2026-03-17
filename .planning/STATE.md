@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: — Dual-Layout Scroll Redesign
-status: planning
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-17T18:20:35.924Z"
-last_activity: 2026-03-17 — v2.0 roadmap created, phases 6-10 defined
+status: in-progress
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-03-17T00:00:00Z"
+last_activity: 2026-03-17 — Phase 7 Plan 1 complete: auto-follow/detach/re-attach wired
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 0
+  total_plans: 2
+  completed_plans: 2
+  percent: 10
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 
 ## Current Position
 
-Phase: 6 of 10 (State Machine Foundation)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-17 — v2.0 roadmap created, phases 6-10 defined
+Phase: 7 of 10 (Auto-Follow and Scroll Detach)
+Plan: 1 of 1 in current phase (complete)
+Status: Phase 7 complete — ready for Phase 8
+Last activity: 2026-03-17 — auto-follow/detach/re-attach wired with state-enum guards
 
-Progress: [░░░░░░░░░░] 0% (v2.0 milestone)
+Progress: [██░░░░░░░░] 20% (v2.0 milestone)
 
 ## Performance Metrics
 
@@ -57,6 +57,10 @@ Recent decisions affecting current work:
 - [v1.0]: viewportDimension delta math: filler += delta keeps maxScrollExtent invariant under keyboard changes
 - [v2.0 CRITICAL]: Define AiChatScrollState enum and migrate controller BEFORE any new behavioral code — boolean proliferation is the top risk
 - [Phase 06]: isStreaming kept as derived getter (no deprecation) for backward compat; _transition() calls both _scrollState.value and notifyListeners() to notify both ValueListenable and ChangeNotifier audiences
+- [Phase 07]: double.maxFinite sentinel for _lastMaxScrollExtent prevents spurious compensation before anchor baseline — no separate _anchorSetupComplete flag needed
+- [Phase 07]: ScrollMetricsNotification doesn't fire in flutter_test on pumpWidget additions — tests call controller.onContentGrowthDetected() directly
+- [Phase 07]: scrollDelta > 0 guard in drag detection prevents re-attach → immediate-detach race on scroll-back gestures
+- [Phase 07]: scheduleFrame() must precede addPostFrameCallback in _onControllerChanged to fire in pump() when registered between frames in test environment
 
 ### Pending Todos
 
@@ -70,6 +74,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T18:10:33.515Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-03-17T00:00:00Z
+Stopped at: Completed 07-01-PLAN.md
 Resume file: None
