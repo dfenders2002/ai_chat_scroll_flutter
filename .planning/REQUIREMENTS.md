@@ -1,54 +1,46 @@
-# Requirements: ai_chat_scroll
+# Requirements: ai_chat_scroll v2.0
 
-**Defined:** 2026-03-15
+**Defined:** 2026-03-17
 **Core Value:** When a user sends a message in an AI chat, that message snaps to the top of the viewport and the AI response grows below it — the user is never disoriented or auto-scrolled away.
 
-## v1 Requirements
+## v2.0 Requirements
 
-Requirements for initial release. Each maps to roadmap phases.
+Requirements for the dual-layout scroll redesign. Each maps to roadmap phases.
 
-### Scroll Core
+### State Machine
 
-- [x] **SCRL-01**: Chat displays messages in reverse-chronological order (newest at bottom, older above)
-- [x] **SCRL-02**: No visible scroll jank when new messages are inserted into the list
-- [x] **SCRL-03**: Scroll position is preserved when user has scrolled up into message history
-- [x] **SCRL-04**: Works correctly on both iOS (bouncing physics) and Android (clamping physics)
+- [ ] **STATE-01**: Scroll system uses a 5-state enum (`idleAtBottom`, `submittedWaitingResponse`, `streamingFollowing`, `streamingDetached`, `historyBrowsing`) replacing boolean flags
+- [ ] **STATE-02**: State transitions are event-driven: `onUserMessageSent()` → submittedWaitingResponse, first AI token → streamingFollowing, user drag during streaming → streamingDetached, down-button tap → streamingFollowing, `onResponseComplete()` at bottom → idleAtBottom, `onResponseComplete()` away from bottom → historyBrowsing
+- [ ] **STATE-03**: Scroll state is exposed as `ValueNotifier<AiChatScrollState>` so consuming apps can build conditional UI (e.g., different FAB behavior per state)
 
-### Anchor Behavior
+### Auto-Follow
 
-- [x] **ANCH-01**: When user sends a message, viewport snaps so the user's message is at the top of the viewport
-- [x] **ANCH-02**: AI response streams below the user message, growing downward within the viewport
-- [x] **ANCH-03**: Dynamic filler space is rendered below the AI response to keep the anchor stable during streaming
-- [x] **ANCH-04**: No auto-scroll occurs during AI streaming — user stays positioned at their sent message
-- [x] **ANCH-05**: If AI response exceeds the viewport, user must manually scroll down to see the rest
-- [x] **ANCH-06**: When user scrolls up to history then sends a new message, viewport resets to top-anchor pattern with new message at top
+- [ ] **FOLLOW-01**: During `streamingFollowing` state, viewport automatically tracks the growing AI response so newest tokens remain visible
+- [ ] **FOLLOW-02**: When user drags upward during streaming, auto-follow stops immediately and state transitions to `streamingDetached`
+- [ ] **FOLLOW-03**: Auto-follow resumes when user taps down-button or manually scrolls back to live bottom, transitioning state to `streamingFollowing`
 
-### API Surface
+### Layout Modes
 
-- [x] **API-01**: Package exposes `AiChatScrollController` with `onUserMessageSent()` method to trigger anchor behavior
-- [x] **API-02**: Package exposes `AiChatScrollController` with `onResponseComplete()` method to signal end of AI streaming
-- [x] **API-03**: Package exposes `AiChatScrollView` wrapper widget that devs wrap around their own message list
-- [x] **API-04**: User drag cancels any managed scroll behavior — no re-hijacking until next `onUserMessageSent()`
+- [ ] **LAYOUT-01**: In rest mode (`idleAtBottom`, `historyBrowsing`), the chat displays with last content above the inputbar — normal bottom-aligned chat layout
+- [ ] **LAYOUT-02**: In active-turn mode (`submittedWaitingResponse`, `streamingFollowing`), the user's sent message appears near the top of the viewport with the AI response streaming in a reading area below
+- [ ] **LAYOUT-03**: When `onResponseComplete()` is called and user is at the bottom, layout transitions from active-turn to rest mode — filler is zeroed and last content settles above inputbar
+- [ ] **LAYOUT-04**: Dynamic spacing is content-bounded — user cannot scroll past actual content into empty filler area
 
-### Enhancements
+### Smart Down-Button
 
-- [x] **ENHN-01**: Scroll-to-bottom FAB/indicator appears when user has scrolled away from the latest messages
-- [x] **ENHN-02**: Keyboard-aware scroll compensation — anchor position adjusts when soft keyboard opens/closes
+- [ ] **DBUTTON-01**: Down-button visibility signal is exposed when user is not at live bottom and new streaming or appended content exists below current viewport
+- [ ] **DBUTTON-02**: Down-button action jumps to the active turn composition (user message visible near top + AI response start/current position visible), not to absolute scroll bottom
 
-### Package Quality
+### Inputbar Awareness
 
-- [x] **QUAL-01**: Package has proper pub.dev structure (pubspec.yaml, LICENSE, README, CHANGELOG)
-- [x] **QUAL-02**: Package includes a working example app demonstrating the scroll behavior
-- [x] **QUAL-03**: All public APIs have dartdoc documentation
-- [x] **QUAL-04**: Package has zero runtime dependencies (Flutter SDK only)
-- [x] **QUAL-05**: Package passes `dart analyze` with no warnings and `pana` with a high score
+- [ ] **INPUT-01**: All anchor offset calculations account for inputbar height, safe area bottom inset, keyboard height, and composer expansion so the active-turn anchor position is always visually correct
 
-## v2 Requirements
+## Future Requirements
 
-### Enhancements
+### Animation
 
-- **ENHN-03**: Configurable animation curves for the anchor snap (instead of instant jump)
-- **ENHN-04**: RTL / bidirectional layout support
+- **ANIM-01**: Configurable animation curves for anchor snap (instead of instant jump)
+- **ANIM-02**: Smooth transition animation from active-turn to rest mode on response completion
 
 ### Platform
 
@@ -57,18 +49,18 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Advanced
 
 - **ADV-01**: Pagination / infinite scroll for loading older message history
-- **ADV-02**: Accessibility: `SemanticsService.announce` for new messages
-- **ADV-03**: Observability callbacks for scroll state (analytics / testing)
+- **ADV-02**: Accessibility: SemanticsService.announce for new messages and state changes
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Chat UI components (message bubbles, input fields, avatars) | This is scroll logic only — devs bring their own UI |
-| Streaming / AI integration | Consuming app handles streaming and signals the controller |
-| Message state management | Devs manage their own message list with their own state solution |
-| Auto-scroll-to-bottom during streaming | This is the anti-pattern this package exists to solve |
-| Configurable scroll physics (v1) | Premature; add only if pub.dev issues request it |
+| Chat UI components (bubbles, input, avatars) | Scroll logic only — devs bring their own UI |
+| Streaming / AI integration | Consuming app handles streaming and signals controller |
+| Message state management | Devs manage their own message list |
+| Built-in down-button widget | Expose signal only — devs build their own FAB (same as v1.0) |
+| Animated transitions (v2.0) | Instant jump first; animation is a v2.1 candidate |
+| Desktop/web scroll behavior | Mobile-first; defer to future milestone |
 
 ## Traceability
 
@@ -76,33 +68,25 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| API-01 | Phase 1 | Complete |
-| API-02 | Phase 1 | Complete |
-| QUAL-04 | Phase 1 | Complete |
-| API-03 | Phase 2 | Complete |
-| SCRL-01 | Phase 2 | Complete |
-| SCRL-02 | Phase 2 | Complete |
-| SCRL-03 | Phase 2 | Complete |
-| SCRL-04 | Phase 2 | Complete |
-| ANCH-01 | Phase 3 | Complete |
-| ANCH-02 | Phase 3 | Complete |
-| ANCH-03 | Phase 3 | Complete |
-| ANCH-04 | Phase 3 | Complete |
-| ANCH-05 | Phase 3 | Complete |
-| ANCH-06 | Phase 3 | Complete |
-| API-04 | Phase 3 | Complete |
-| QUAL-01 | Phase 4 | Complete |
-| QUAL-02 | Phase 4 | Complete |
-| QUAL-03 | Phase 4 | Complete |
-| QUAL-05 | Phase 4 | Complete |
-| ENHN-01 | Phase 5 | Complete |
-| ENHN-02 | Phase 5 | Complete |
+| STATE-01 | — | Pending |
+| STATE-02 | — | Pending |
+| STATE-03 | — | Pending |
+| FOLLOW-01 | — | Pending |
+| FOLLOW-02 | — | Pending |
+| FOLLOW-03 | — | Pending |
+| LAYOUT-01 | — | Pending |
+| LAYOUT-02 | — | Pending |
+| LAYOUT-03 | — | Pending |
+| LAYOUT-04 | — | Pending |
+| DBUTTON-01 | — | Pending |
+| DBUTTON-02 | — | Pending |
+| INPUT-01 | — | Pending |
 
 **Coverage:**
-- v1 requirements: 21 total
-- Mapped to phases: 21
-- Unmapped: 0
+- v2.0 requirements: 13 total
+- Mapped to phases: 0
+- Unmapped: 13 ⚠️
 
 ---
-*Requirements defined: 2026-03-15*
-*Last updated: 2026-03-15 after roadmap creation*
+*Requirements defined: 2026-03-17*
+*Last updated: 2026-03-17 after initial definition*
